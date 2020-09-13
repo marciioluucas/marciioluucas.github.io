@@ -5,8 +5,7 @@
         dark
         app
         color="primary"
-        scroll-target="#b"
-        shrink-on-scroll
+        prominent
         :src="require('./assets/background.jpg')"
     >
       <template v-slot:img="{ props }">
@@ -17,9 +16,8 @@
       <v-toolbar-title class="font-weight-bold">Enviar Gemidão do ZAP</v-toolbar-title>
     </v-app-bar>
 
-    <v-main id="b"  class="overflow-y-auto" max-height="100%">
-
-      <v-container class="fill-height">
+    <v-main>
+      <v-container >
         <v-card>
           <v-card-title>O gemidão do zap</v-card-title>
           <v-card-subtitle>envie o gemidão do zap gratuitamente para o celular dos seus amigos</v-card-subtitle>
@@ -83,11 +81,12 @@
         </v-card-text>
       </v-card>
     </v-dialog>
-    <v-footer>2020 - Todos os direitos reservados</v-footer>
     <audio id="sharp">
       <source :src="require('./assets/sharp.mp3')" type="audio/mp3"/>
       Your browser does not support the audio element.
     </audio>
+    <v-footer app>2020 - Todos os direitos reservados</v-footer>
+
   </v-app>
 </template>
 
