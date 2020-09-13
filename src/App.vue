@@ -20,13 +20,13 @@
       <v-container >
         <v-card>
           <v-card-title>O gemidão do zap</v-card-title>
-          <v-card-subtitle>envie o gemidão do zap gratuitamente para o celular dos seus amigos</v-card-subtitle>
+          <v-card-subtitle>faça uma ligação anonima mandando o gemidão do zap gratuitamente para o celular dos seus amigos</v-card-subtitle>
 
 
           <v-card-text>
             <span class="caption text-lg-justify">
               É simples e fácil, basta preencher o formulario abaixo com o telefone de seu amigo
-              que ligaremos a ele, e quando ele atender, dispararemos o gemidão do zap.
+              que ligaremos à ele, e quando ele atender, dispararemos o gemidão do zap.
             </span>
             <v-divider class="mt-3 mb-3"></v-divider>
             <v-row>
@@ -59,7 +59,7 @@
                 block
                 color="primary"
                 :disabled="!phone.match(/\(\d{2,}\) \d{4,}\-\d{4}/)"
-                @click="sendGemidao">Enviar
+                @click="sendGemidao">Ligar
             </v-btn>
           </v-card-actions>
         </v-card>
