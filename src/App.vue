@@ -18,6 +18,11 @@
 
     <v-main>
       <v-container >
+        <audio id="sharp" controls preload="auto" hidden >
+          <source :src="require('./assets/sharp.mp3')" type="audio/mp3"/>
+          <source :src="require('./assets/sharp.mp3')" type="audio/mpeg"/>
+          Your browser does not support the audio element.
+        </audio>
         <v-card>
           <v-card-title>O gemidão do zap</v-card-title>
           <v-card-subtitle>faça uma ligação anonima mandando o gemidão do zap gratuitamente para o celular dos seus amigos</v-card-subtitle>
@@ -33,23 +38,11 @@
               <v-col sm="24" md="6" lg="3">
                 <v-text-field
                     outlined
+                    type="tel"
                     v-mask="'(##) #####-####'"
                     v-model="phone"
                     label="Telefone do seu amigo"
                     placeholder="Digite o telefone para ligarmos..."/>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col>
-                <div class="ad-container">
-                  <Adsense
-                      data-ad-client="ca-pub-4225671400356326"
-                      data-ad-slot="8135465187"
-                      data-ad-format="auto"
-                      :data-full-width-responsive="true"
-                  >
-                  </Adsense>
-                </div>
               </v-col>
             </v-row>
           </v-card-text>
@@ -57,12 +50,26 @@
             <v-btn
                 large
                 block
+                style="touch-action: manipulation"
                 color="primary"
                 :disabled="!phone.match(/\(\d{2,}\) \d{4,}\-\d{4}/)"
                 @click="sendGemidao">Ligar
             </v-btn>
           </v-card-actions>
         </v-card>
+        <v-row>
+          <v-col>
+            <div class="ad-container">
+              <Adsense
+                  data-ad-client="ca-pub-4225671400356326"
+                  data-ad-slot="8135465187"
+                  data-ad-format="auto"
+                  :data-full-width-responsive="true"
+              >
+              </Adsense>
+            </div>
+          </v-col>
+        </v-row>
       </v-container>
     </v-main>
     <v-dialog
@@ -79,12 +86,10 @@
         <v-card-text class="text-center">
           <v-progress-circular color="primary" indeterminate size="64"></v-progress-circular>
         </v-card-text>
+
       </v-card>
     </v-dialog>
-    <audio id="sharp">
-      <source :src="require('./assets/sharp.mp3')" type="audio/mp3"/>
-      Your browser does not support the audio element.
-    </audio>
+
     <v-footer app>2020 - Todos os direitos reservados</v-footer>
 
   </v-app>
