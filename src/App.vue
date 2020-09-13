@@ -44,17 +44,13 @@
             <v-row>
               <v-col>
                 <div class="ad-container">
-                  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-                  <!-- zap -->
-                  <ins class="adsbygoogle"
-                       style="display:block"
-                       data-ad-client="ca-pub-4225671400356326"
-                       data-ad-slot="8135465187"
-                       data-ad-format="auto"
-                       data-full-width-responsive="true"></ins>
-                  <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                  </script>
+                  <Adsense
+                      data-ad-client="ca-pub-4225671400356326"
+                      data-ad-slot="8135465187"
+                      data-ad-format="auto"
+                      :data-full-width-responsive="true"
+                  >
+                  </Adsense>
                 </div>
               </v-col>
             </v-row>
@@ -108,6 +104,7 @@
     watch: {},
     created() {
       this.$vuetify.theme.dark = true
+      console.log(process.env.NODE_ENV)
     },
     methods: {
       sendGemidao() {
