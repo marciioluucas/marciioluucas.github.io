@@ -19,17 +19,11 @@
     <v-main>
       <v-container>
         <audio id="sharp" controls preload="auto" hidden>
-          <source :src="require('./assets/sharp.mp3')" type="audio/mp3"/>
           <source :src="require('./assets/sharp.mp3')" type="audio/mpeg"/>
+          <source :src="require('./assets/sharp.ogg')" type="audio/ogg"/>
           Your browser does not support the audio element.
         </audio>
-        <v-card v-if="isIos()">
-          <v-card-title>Sinto muito</v-card-title>
-          <v-card-text>
-            Este app funciona somente para Android
-          </v-card-text>
-        </v-card>
-        <v-card v-else>
+        <v-card>
           <v-card-title>O gemidão do zap</v-card-title>
           <v-card-subtitle>faça uma ligação anonima mandando o gemidão do zap gratuitamente para o celular dos seus
             amigos
@@ -78,6 +72,7 @@
             </div>
           </v-col>
         </v-row>
+        <div id="result"></div>
       </v-container>
     </v-main>
     <v-dialog
@@ -119,16 +114,14 @@
       console.log(process.env.NODE_ENV)
     },
     methods: {
-      isIos() {
-        return !!(navigator.userAgent.match(/iPhone/i)
-          || navigator.userAgent.match(/iPad/i)
-          || navigator.userAgent.match(/iPod/i));
-      },
+
       sendGemidao() {
         this.overlay = true;
         setTimeout(() => {
           this.overlay = false
+
           document.getElementById('sharp').play();
+
         }, 3000)
 
       }
