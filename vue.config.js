@@ -2,5 +2,5 @@ const path = require("path");
 
 module.exports = {
   outputDir: path.resolve("./docs"),
-  publicPath: process.env.NODE_ENV === "production" ? '' : "/"
+  publicPath: process.env.NODE_ENV === "production" ? '/gemidao-do-zap/' : "/"
 }
