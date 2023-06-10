@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="keywords" content="calculadora de combustível avançada, consumo de combustível, economia de combustível, eficiência de combustível, calcular consumo de carro, dicas para economizar combustível, calcular quilometragem por litro, calcular gasto de combustível, otimização de consumo de carro">
+  <meta name="description" content="Melhore a eficiência do seu carro com a calculadora de combustível avançada. Calcule o consumo de combustível, economize dinheiro e descubra dicas para otimizar a eficiência do seu veículo. Obtenha resultados incríveis e reduza seus gastos com combustível.">
+
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4225671400356326"
+          crossorigin="anonymous"></script>
+</head>
+
+<body>
+<div class="container">
+  <h3>Calculadora de economia de combustível</h3>
+  <h4>Tenha mais economia na hora de abastecer!</h4>
+  <form id="combustivelForm">
+    <div class="row">
+      <div class="col s12">
+        <h5>Cidade</h5>
+      </div>
+      <div class="input-field col s12 m6">
+        <input id="autonomiaGasolinaCidade" type="number" step="0.01" min="0" value="8.5">
+        <label for="autonomiaGasolinaCidade">Autonomia na Gasolina (km/l)</label>
+      </div>
+      <div class="input-field col s12 m6">
+        <input id="autonomiaEtanolCidade" type="number" step="0.01" min="0" value="5.4">
+        <label for="autonomiaEtanolCidade">Autonomia no Etanol (km/l)</label>
+      </div>
+    </div>
+    <br><br>
+    <div class="row">
+      <div class="col s12">
+        <h5>Estrada</h5>
+      </div>
+      <div class="input-field col s12 m6">
+        <input id="autonomiaGasolinaEstrada" type="number" step="0.01" min="0" value="14.07">
+        <label for="autonomiaGasolinaEstrada">Autonomia na Gasolina (km/l)</label>
+      </div>
+      <div class="input-field col s12 m6">
+        <input id="autonomiaEtanolEstrada" type="number" step="0.01" min="0" value="10.7">
+        <label for="autonomiaEtanolEstrada">Autonomia no Etanol (km/l)</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col s12">
+        <h5>Valores dos combustíveis</h5>
+      </div>
+      <div class="input-field col s12 m6">
+        <input id="precoGasolina" type="number" step="0.01" min="0" value="4.90">
+        <label for="precoGasolina">Preço da Gasolina (R$)</label>
+      </div>
+      <div class="input-field col s12 m6">
+        <input id="precoEtanol" type="number" step="0.01" min="0" value="3.79">
+        <label for="precoEtanol">Preço do Etanol (R$)</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="input-field col s12">
+        <button class="btn waves-effect waves-light" type="submit" name="action">Calcular</button>
+      </div>
+    </div>
+  </form>
+
+  <div id="resultadoEstrada" style="display: none;">
+    <h4>Resultados na Estrada</h4>
+    <table class="striped">
+      <thead>
+      <tr>
+        <th></th>
+        <th>Etanol</th>
+        <th>Gasolina</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>Autonomia máxima (km)</td>
+        <td id="consumoEtanolEstrada"></td>
+        <td id="consumoGasolinaEstrada"></td>
+      </tr>
+      <tr>
+        <td>Custo R$/km</td>
+        <td id="custoEtanolEstrada"></td>
+        <td id="custoGasolinaEstrada"></td>
+      </tr>
+      <tr>
+        <td>Combustível Vantajoso</td>
+        <td id="combustivelVantajosoEtanolEstrada"></td>
+        <td id="combustivelVantajosoGasolinaEstrada"></td>
+      </tr>
+      <tr>
+        <td>Economia Tanque (R$)</td>
+        <td colspan="2" id="economiaEstrada"></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="resultadoCidade" style="display: none;">
+    <h4>Resultados na Cidade</h4>
+    <table class="striped">
+      <thead>
+      <tr>
+        <th></th>
+        <th>Etanol</th>
+        <th>Gasolina</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>Autonomia máxima (km)</td>
+        <td id="consumoEtanolCidade"></td>
+        <td id="consumoGasolinaCidade"></td>
+      </tr>
+      <tr>
+        <td>Custo R$/km</td>
+        <td id="custoEtanolCidade"></td>
+        <td id="custoGasolinaCidade"></td>
+      </tr>
+      <tr>
+        <td>Combustível Vantajoso</td>
+        <td id="combustivelVantajosoEtanolCidade"></td>
+        <td id="combustivelVantajosoGasolinaCidade"></td>
+      </tr>
+      <tr>
+        <td>Economia Tanque (R$)</td>
+        <td colspan="2" id="economiaCidade"></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <br>
+  <br>
+
+</div>
+
+<script>
+  document.getElementById('combustivelForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const autonomiaGasolinaCidade = parseFloat(document.getElementById('autonomiaGasolinaCidade').value);
+    const autonomiaGasolinaEstrada = parseFloat(document.getElementById('autonomiaGasolinaEstrada').value);
+    const autonomiaEtanolCidade = parseFloat(document.getElementById('autonomiaEtanolCidade').value);
+    const autonomiaEtanolEstrada = parseFloat(document.getElementById('autonomiaEtanolEstrada').value);
+    const precoGasolina = parseFloat(document.getElementById('precoGasolina').value);
+    const precoEtanol = parseFloat(document.getElementById('precoEtanol').value);
+
+    const consumoTotalGasolinaCidade = autonomiaGasolinaCidade * 56;
+    const consumoTotalGasolinaEstrada = autonomiaGasolinaEstrada * 56;
+    const consumoTotalEtanolCidade = autonomiaEtanolCidade * 56;
+    const consumoTotalEtanolEstrada = autonomiaEtanolEstrada * 56;
+
+    const custoPorKmGasolinaCidade = precoGasolina / autonomiaGasolinaCidade;
+    const custoPorKmGasolinaEstrada = precoGasolina / autonomiaGasolinaEstrada;
+    const custoPorKmEtanolCidade = precoEtanol / autonomiaEtanolCidade;
+    const custoPorKmEtanolEstrada = precoEtanol / autonomiaEtanolEstrada;
+
+    const combustivelMaisVantajosoCidade = custoPorKmGasolinaCidade < custoPorKmEtanolCidade ? "Gasolina" : "Etanol";
+    const combustivelMaisVantajosoEstrada = custoPorKmGasolinaEstrada < custoPorKmEtanolEstrada ? "Gasolina" : "Etanol";
+
+    const economiaCidade = (combustivelMaisVantajosoCidade === "Gasolina" ?
+      (custoPorKmEtanolCidade - custoPorKmGasolinaCidade) * consumoTotalGasolinaCidade :
+      (custoPorKmGasolinaCidade - custoPorKmEtanolCidade) * consumoTotalEtanolCidade).toFixed(2);
+
+    const economiaEstrada = (combustivelMaisVantajosoEstrada === "Gasolina" ?
+      (custoPorKmEtanolEstrada - custoPorKmGasolinaEstrada) * consumoTotalGasolinaEstrada :
+      (custoPorKmGasolinaEstrada - custoPorKmEtanolEstrada) * consumoTotalEtanolEstrada).toFixed(2);
+
+    document.getElementById('consumoEtanolCidade').textContent = consumoTotalEtanolCidade.toFixed(1) + " km";
+    document.getElementById('consumoGasolinaCidade').textContent = consumoTotalGasolinaCidade.toFixed(1) + " km";
+    document.getElementById('custoEtanolCidade').textContent = custoPorKmEtanolCidade.toFixed(2) + " R$/km";
+    document.getElementById('custoGasolinaCidade').textContent = custoPorKmGasolinaCidade.toFixed(2) + " R$/km";
+    document.getElementById('combustivelVantajosoEtanolCidade').textContent = combustivelMaisVantajosoCidade === "Etanol" ? "✓" : "";
+    document.getElementById('combustivelVantajosoGasolinaCidade').textContent = combustivelMaisVantajosoCidade === "Gasolina" ? "✓" : "";
+    document.getElementById('economiaCidade').textContent = economiaCidade > 0 ? economiaCidade + " R$" : "N/A";
+
+    document.getElementById('consumoEtanolEstrada').textContent = consumoTotalEtanolEstrada.toFixed(1) + " km";
+    document.getElementById('consumoGasolinaEstrada').textContent = consumoTotalGasolinaEstrada.toFixed(1) + " km";
+    document.getElementById('custoEtanolEstrada').textContent = custoPorKmEtanolEstrada.toFixed(2) + " R$/km";
+    document.getElementById('custoGasolinaEstrada').textContent = custoPorKmGasolinaEstrada.toFixed(2) + " R$/km";
+    document.getElementById('combustivelVantajosoEtanolEstrada').textContent = combustivelMaisVantajosoEstrada === "Etanol" ? "✓" : "";
+    document.getElementById('combustivelVantajosoGasolinaEstrada').textContent = combustivelMaisVantajosoEstrada === "Gasolina" ? "✓" : "";
+    document.getElementById('economiaEstrada').textContent = economiaEstrada > 0 ? economiaEstrada + " R$" : "N/A";
+
+    document.getElementById('resultadoCidade').style.display = 'block';
+    document.getElementById('resultadoEstrada').style.display = 'block';
+  });
+</script>
+</body>
+
+</html>
