@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt_br">
 
 <head>
   <!-- Compiled and minified CSS -->
+  <meta charset="UTF-8">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="keywords" content="calculadora de combustível avançada, consumo de combustível, economia de combustível, eficiência de combustível, calcular consumo de carro, dicas para economizar combustível, calcular quilometragem por litro, calcular gasto de combustível, otimização de consumo de carro">
@@ -19,7 +20,7 @@
       <div class="col s12">
         <h5>Cidade</h5>
       </div>
-      <div class="input-field col s12 m6">
+      <div class="input-field col s12 m6" style="color: red">
         <input id="autonomiaGasolinaCidade" type="number" step="0.01" min="0" value="8.5">
         <label for="autonomiaGasolinaCidade">Autonomia na Gasolina (km/l)</label>
       </div>
@@ -57,7 +58,7 @@
     </div>
     <div class="row">
       <div class="input-field col s12">
-        <button class="btn waves-effect waves-light" type="submit" name="action">Calcular</button>
+        <button style="width: 100%" class="btn waves-effect waves-light purple darken-4 btn-large" type="submit" name="action">Calcular</button>
       </div>
     </div>
   </form>
