@@ -1,1 +1,0 @@
-# Enviar Gemidão para seus amigos Grátis!
