@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+  <url>
+    <loc>https://marciioluucas.github.io</loc>
+    <lastmod>2023-06-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+    <description>
+        Uma calculadora de combustível avançada que leva em consideração os preços dos combustíveis e a eficiência em KM/L de cada veículo, proporcionando estimativas mais precisas para encher o tanque e calcular os custos associados. Planeje suas viagens com mais precisão, controle os gastos com combustível e tome decisões informadas sobre a eficiência dos veículos. Economize dinheiro e otimize suas despesas relacionadas ao uso do veículo com esta ferramenta.
+    </description>
+    <image:image>
+      <image:loc>https://marciioluucas.github.io/mstile-310x310.png</image:loc>
+      <image:caption>Calculadora de Combustível</image:caption>
+      <image:title>Calculadora de Combustível</image:title>
+    </image:image>
+  </url>
+</urlset>
