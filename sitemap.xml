@@ -7,9 +7,6 @@
     <lastmod>2023-06-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
-    <description>
-        Uma calculadora de combustível avançada que leva em consideração os preços dos combustíveis e a eficiência em KM/L de cada veículo, proporcionando estimativas mais precisas para encher o tanque e calcular os custos associados. Planeje suas viagens com mais precisão, controle os gastos com combustível e tome decisões informadas sobre a eficiência dos veículos. Economize dinheiro e otimize suas despesas relacionadas ao uso do veículo com esta ferramenta.
-    </description>
     <image:image>
       <image:loc>https://marciioluucas.github.io/mstile-310x310.png</image:loc>
       <image:caption>Calculadora de Combustível</image:caption>
