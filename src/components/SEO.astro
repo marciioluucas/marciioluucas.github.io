@@ -8,7 +8,7 @@ interface Props {
 }
 const { title, description, canonical, ogImage, jsonLd } = Astro.props;
 const url = canonical ?? Astro.url.href;
-const image = ogImage ?? new URL('/og-default.png', Astro.site).toString();
+const image = ogImage ?? new URL('/og/default.png', Astro.site).toString();
 const ldArray = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 ---
 <title>{title}</title>

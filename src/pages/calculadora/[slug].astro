@@ -31,7 +31,8 @@ const jsonLd = {
 };
 ---
 <Layout title={title}>
-  <SEO slot="head" title={title} description={description} jsonLd={jsonLd} />
+  <SEO slot="head" title={title} description={description} jsonLd={jsonLd}
+       ogImage={new URL(`/og/${v.slug}.png`, Astro.site).toString()} />
   <section class="container-app pt-8 pb-2">
     <p class="text-sm text-muted"><a href="/" class="underline">← Calculadora</a></p>
     <h1 class="mt-2 text-3xl font-bold sm:text-4xl">{vehicleTitle(v)}</h1>
