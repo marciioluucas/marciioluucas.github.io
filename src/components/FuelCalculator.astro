@@ -412,47 +412,31 @@ const marcas = [...new Set(allVehicles.map((x) => x.marca))].sort();
     });
 
     const fmtBR = (n: number) => n.toFixed(2).replace('.', ',');
-    // Resposta principal: usa o cenario "cidade" como referencia (uso mais comum)
     const venceuCidade = cidade.vencedor;
     const venceuEstrada = estrada.vencedor;
-    const mesmaResposta = venceuCidade === venceuEstrada;
-    const economiaPrincipal = mesmaResposta
-      ? Math.max(cidade.economiaRs, estrada.economiaRs)
-      : cidade.economiaRs;
     const combNome = (c: 'gasolina' | 'etanol') => c === 'gasolina' ? 'GASOLINA' : 'ETANOL';
     const combCor = (c: 'gasolina' | 'etanol') => c === 'gasolina' ? 'text-primary' : 'text-accent';
-    const respostaCor = mesmaResposta
-      ? (venceuCidade === 'gasolina' ? 'border-primary bg-primary/10' : 'border-accent bg-accent/10')
-      : 'border-border bg-surface';
+    const combBg = (c: 'gasolina' | 'etanol') => c === 'gasolina' ? 'border-primary bg-primary/10' : 'border-accent bg-accent/10';
 
-    let respostaHtml: string;
-    if (mesmaResposta) {
-      respostaHtml = `
-        <div class="text-center py-4">
-          <p class="text-base text-muted">A resposta é</p>
-          <p class="mt-2 text-5xl font-extrabold ${combCor(venceuCidade)}">${combNome(venceuCidade)}</p>
-          ${economiaPrincipal > 0
-            ? `<p class="mt-3 text-lg">Você economiza <strong class="text-accent">R$ ${fmtBR(economiaPrincipal)}</strong> por tanque</p>`
-            : ''}
-        </div>
-      `;
-    } else {
-      respostaHtml = `
-        <div class="text-center py-4">
-          <p class="text-base text-muted">Depende de onde você dirige</p>
-          <div class="mt-3 grid gap-3 sm:grid-cols-2 text-left">
-            <div class="rounded-md bg-bg/40 p-3">
-              <p class="text-sm text-muted">Na cidade</p>
-              <p class="text-2xl font-bold ${combCor(venceuCidade)}">${combNome(venceuCidade)}</p>
-            </div>
-            <div class="rounded-md bg-bg/40 p-3">
-              <p class="text-sm text-muted">Na estrada</p>
-              <p class="text-2xl font-bold ${combCor(venceuEstrada)}">${combNome(venceuEstrada)}</p>
-            </div>
-          </div>
-        </div>
-      `;
-    }
+    const cenarioCard = (titulo: string, icone: string, c: typeof cidade) => `
+      <div class="rounded-xl border-2 p-5 ${combBg(c.vencedor)}">
+        <p class="text-base text-muted">${icone} ${titulo}</p>
+        <p class="mt-2 text-4xl font-extrabold ${combCor(c.vencedor)} sm:text-5xl">${combNome(c.vencedor)}</p>
+        ${c.economiaRs > 0
+          ? `<p class="mt-2 text-base">Economia: <strong class="text-accent">R$ ${fmtBR(c.economiaRs)}</strong> por tanque</p>`
+          : ''}
+      </div>
+    `;
+
+    const respostaHtml = `
+      <div class="grid gap-3 sm:grid-cols-2">
+        ${cenarioCard('Na cidade', '🏙️', cidade)}
+        ${cenarioCard('Na estrada', '🛣️', estrada)}
+      </div>
+      ${venceuCidade !== venceuEstrada
+        ? '<p class="mt-4 text-center text-sm text-muted">⚠️ Os combustíveis vencem em situações diferentes — escolha conforme seu uso</p>'
+        : ''}
+    `;
 
     const detalheCard = (titulo: string, c: typeof cidade) => `
       <section class="rounded-lg bg-surface p-4">
@@ -472,10 +456,8 @@ const marcas = [...new Set(allVehicles.map((x) => x.marca))].sort();
       </section>
     `;
     resultadoEl.innerHTML = `
-      <div class="container-app">
-        <div class="mt-6 rounded-xl border-2 p-4 ${respostaCor}">
-          ${respostaHtml}
-        </div>
+      <div class="container-app mt-6">
+        ${respostaHtml}
         <details class="mt-4 rounded-md border border-border bg-surface">
           <summary class="cursor-pointer select-none p-3 text-sm text-muted">📊 Ver detalhes do cálculo</summary>
           <div class="space-y-3 p-3 pt-0">
