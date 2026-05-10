@@ -1,0 +1,46 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SEO from '../../components/SEO.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import FuelCalculator from '../../components/FuelCalculator.astro';
+import { listVehicles, getVehicle, vehicleTitle } from '../../lib/vehicles';
+import { AD_SLOTS } from '../../lib/ads';
+
+export function getStaticPaths() {
+  return listVehicles().map((v) => ({ params: { slug: v.slug } }));
+}
+
+const { slug } = Astro.params;
+const v = getVehicle(slug!);
+if (!v) return Astro.redirect('/404');
+const title = `Calculadora ${vehicleTitle(v)}: Etanol ou Gasolina?`;
+const description = `Veja se etanol ou gasolina compensa pro ${vehicleTitle(v)}. Autonomias pré-configuradas e cálculo na hora.`;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Vehicle',
+  brand: { '@type': 'Brand', name: v.marca },
+  model: v.modelo,
+  modelDate: String(v.ano),
+  fuelType: 'Flex (gasolina/etanol)',
+  fuelEfficiency: [
+    { '@type': 'QuantitativeValue', value: v.autonomia.gasolina.cidade, unitText: 'km/l (gasolina cidade)' },
+    { '@type': 'QuantitativeValue', value: v.autonomia.gasolina.estrada, unitText: 'km/l (gasolina estrada)' },
+    { '@type': 'QuantitativeValue', value: v.autonomia.etanol.cidade, unitText: 'km/l (etanol cidade)' },
+    { '@type': 'QuantitativeValue', value: v.autonomia.etanol.estrada, unitText: 'km/l (etanol estrada)' },
+  ],
+};
+---
+<Layout title={title}>
+  <SEO slot="head" title={title} description={description} jsonLd={jsonLd} />
+  <section class="container-app pt-8 pb-2">
+    <p class="text-sm text-muted"><a href="/" class="underline">← Calculadora</a></p>
+    <h1 class="mt-2 text-3xl font-bold sm:text-4xl">{vehicleTitle(v)}</h1>
+    <p class="mt-2 text-muted">Etanol ou gasolina pro seu {v.marca} {v.modelo}? Calcule abaixo.</p>
+    <AdSlot slot={AD_SLOTS.afterHero} />
+  </section>
+  <FuelCalculator initialSlug={v.slug} />
+  <div class="container-app">
+    <AdSlot slot={AD_SLOTS.inArticle} format="fluid" layout="in-article" />
+    <AdSlot slot={AD_SLOTS.footer} />
+  </div>
+</Layout>
