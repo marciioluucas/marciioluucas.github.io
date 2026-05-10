@@ -13,8 +13,8 @@ export function getStaticPaths() {
 const { slug } = Astro.params;
 const v = getVehicle(slug!);
 if (!v) return Astro.redirect('/404');
-const title = `Calculadora ${vehicleTitle(v)}: Etanol ou Gasolina?`;
-const description = `Veja se etanol ou gasolina compensa pro ${vehicleTitle(v)}. Autonomias pré-configuradas e cálculo na hora.`;
+const title = `${vehicleTitle(v)}: Vale Etanol ou Gasolina?`;
+const description = `Calculadora pronta pro ${vehicleTitle(v)}. Coloque o preço do dia e descubra qual combustível compensa em segundos.`;
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Vehicle',
@@ -34,9 +34,10 @@ const jsonLd = {
   <SEO slot="head" title={title} description={description} jsonLd={jsonLd}
        ogImage={new URL(`/og/${v.slug}.png`, Astro.site).toString()} />
   <section class="container-app pt-8 pb-2">
-    <p class="text-sm text-muted"><a href="/" class="underline">← Calculadora</a></p>
-    <h1 class="mt-2 text-3xl font-bold sm:text-4xl">{vehicleTitle(v)}</h1>
-    <p class="mt-2 text-muted">Etanol ou gasolina pro seu {v.marca} {v.modelo}? Calcule abaixo.</p>
+    <p class="text-sm text-muted"><a href="/" class="underline hover:text-text">← Voltar</a></p>
+    <h1 class="mt-2 text-3xl font-extrabold sm:text-4xl">{vehicleTitle(v)}</h1>
+    <p class="mt-2 text-lg font-semibold text-primary">Etanol ou gasolina? Veja qual compensa.</p>
+    <p class="mt-1 text-sm text-muted">Já preenchemos o consumo do {v.marca} {v.modelo} pra você. Só falta o preço do posto.</p>
     <AdSlot slot={AD_SLOTS.afterHero} />
   </section>
   <FuelCalculator initialSlug={v.slug} />
