@@ -1,0 +1,11 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SEO from '../components/SEO.astro';
+---
+<Layout title="Página não encontrada">
+  <SEO slot="head" title="404" description="Página não encontrada." />
+  <section class="container-app py-16 text-center">
+    <h1 class="text-5xl font-bold text-primary">404</h1>
+    <p class="mt-3 text-muted">Essa página não existe. Voltar pra <a class="underline text-text" href="/">calculadora</a>.</p>
+  </section>
+</Layout>

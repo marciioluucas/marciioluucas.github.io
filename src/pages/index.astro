@@ -3,12 +3,35 @@ import Layout from '../layouts/Layout.astro';
 import SEO from '../components/SEO.astro';
 import AdSlot from '../components/AdSlot.astro';
 import FuelCalculator from '../components/FuelCalculator.astro';
+import FAQ from '../components/FAQ.astro';
+import faq from '../data/faq.json';
 import { AD_SLOTS } from '../lib/ads';
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Calculadora de Combustível',
+    applicationCategory: 'UtilityApplication',
+    operatingSystem: 'Any',
+    offers: { '@type': 'Offer', price: '0' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  },
+];
 ---
 <Layout title="Calculadora de Combustível">
   <SEO slot="head"
     title="Calculadora de Combustível: Etanol ou Gasolina? — Vale a Pena"
     description="Calcule rápido qual combustível compensa: etanol ou gasolina. Mobile-first, com regra dos 70% e suporte a múltiplos veículos."
+    jsonLd={jsonLd}
   />
   <section class="container-app pt-8 pb-2">
     <h1 class="text-3xl font-bold sm:text-4xl">Etanol ou Gasolina?</h1>
@@ -19,6 +42,7 @@ import { AD_SLOTS } from '../lib/ads';
   <div class="container-app">
     <AdSlot slot={AD_SLOTS.inArticle} format="fluid" layout="in-article" />
   </div>
+  <FAQ />
   <div class="container-app">
     <AdSlot slot={AD_SLOTS.footer} />
   </div>
