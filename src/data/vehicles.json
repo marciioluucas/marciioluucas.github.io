@@ -108,5 +108,335 @@
       "gasolina": { "cidade": 10.1, "estrada": 13.6 },
       "etanol":   { "cidade": 7.0, "estrada": 9.4 }
     }
+  },
+  "mobi-2023": {
+    "slug": "mobi-2023",
+    "marca": "Fiat",
+    "modelo": "Mobi",
+    "ano": 2023,
+    "tanque": 47,
+    "autonomia": {
+      "gasolina": { "cidade": 13.4, "estrada": 16.0 },
+      "etanol":   { "cidade": 9.2, "estrada": 11.0 }
+    }
+  },
+  "argo-2022": {
+    "slug": "argo-2022",
+    "marca": "Fiat",
+    "modelo": "Argo",
+    "ano": 2022,
+    "tanque": 48,
+    "autonomia": {
+      "gasolina": { "cidade": 11.4, "estrada": 14.5 },
+      "etanol":   { "cidade": 7.9, "estrada": 10.0 }
+    }
+  },
+  "pulse-2023": {
+    "slug": "pulse-2023",
+    "marca": "Fiat",
+    "modelo": "Pulse",
+    "ano": 2023,
+    "tanque": 47,
+    "autonomia": {
+      "gasolina": { "cidade": 10.6, "estrada": 13.2 },
+      "etanol":   { "cidade": 7.3, "estrada": 9.1 }
+    }
+  },
+  "fastback-2023": {
+    "slug": "fastback-2023",
+    "marca": "Fiat",
+    "modelo": "Fastback",
+    "ano": 2023,
+    "tanque": 47,
+    "autonomia": {
+      "gasolina": { "cidade": 10.4, "estrada": 13.0 },
+      "etanol":   { "cidade": 7.1, "estrada": 8.9 }
+    }
+  },
+  "toro-2022": {
+    "slug": "toro-2022",
+    "marca": "Fiat",
+    "modelo": "Toro",
+    "ano": 2022,
+    "tanque": 60,
+    "autonomia": {
+      "gasolina": { "cidade": 8.5, "estrada": 11.5 },
+      "etanol":   { "cidade": 5.9, "estrada": 8.0 }
+    }
+  },
+  "creta-2023": {
+    "slug": "creta-2023",
+    "marca": "Hyundai",
+    "modelo": "Creta",
+    "ano": 2023,
+    "tanque": 50,
+    "autonomia": {
+      "gasolina": { "cidade": 9.5, "estrada": 12.8 },
+      "etanol":   { "cidade": 6.5, "estrada": 8.8 }
+    }
+  },
+  "hb20s-2022": {
+    "slug": "hb20s-2022",
+    "marca": "Hyundai",
+    "modelo": "HB20S",
+    "ano": 2022,
+    "tanque": 50,
+    "autonomia": {
+      "gasolina": { "cidade": 11.5, "estrada": 14.0 },
+      "etanol":   { "cidade": 8.0, "estrada": 9.7 }
+    }
+  },
+  "tracker-2023": {
+    "slug": "tracker-2023",
+    "marca": "Chevrolet",
+    "modelo": "Tracker",
+    "ano": 2023,
+    "tanque": 44,
+    "autonomia": {
+      "gasolina": { "cidade": 10.5, "estrada": 13.3 },
+      "etanol":   { "cidade": 7.2, "estrada": 9.2 }
+    }
+  },
+  "spin-2022": {
+    "slug": "spin-2022",
+    "marca": "Chevrolet",
+    "modelo": "Spin",
+    "ano": 2022,
+    "tanque": 53,
+    "autonomia": {
+      "gasolina": { "cidade": 9.5, "estrada": 12.5 },
+      "etanol":   { "cidade": 6.6, "estrada": 8.6 }
+    }
+  },
+  "cobalt-2019": {
+    "slug": "cobalt-2019",
+    "marca": "Chevrolet",
+    "modelo": "Cobalt",
+    "ano": 2019,
+    "tanque": 52,
+    "autonomia": {
+      "gasolina": { "cidade": 9.8, "estrada": 13.0 },
+      "etanol":   { "cidade": 6.8, "estrada": 9.0 }
+    }
+  },
+  "kwid-2023": {
+    "slug": "kwid-2023",
+    "marca": "Renault",
+    "modelo": "Kwid",
+    "ano": 2023,
+    "tanque": 38,
+    "autonomia": {
+      "gasolina": { "cidade": 13.5, "estrada": 15.5 },
+      "etanol":   { "cidade": 9.4, "estrada": 10.7 }
+    }
+  },
+  "sandero-2022": {
+    "slug": "sandero-2022",
+    "marca": "Renault",
+    "modelo": "Sandero",
+    "ano": 2022,
+    "tanque": 50,
+    "autonomia": {
+      "gasolina": { "cidade": 9.4, "estrada": 12.0 },
+      "etanol":   { "cidade": 6.5, "estrada": 8.3 }
+    }
+  },
+  "duster-2022": {
+    "slug": "duster-2022",
+    "marca": "Renault",
+    "modelo": "Duster",
+    "ano": 2022,
+    "tanque": 50,
+    "autonomia": {
+      "gasolina": { "cidade": 8.7, "estrada": 11.6 },
+      "etanol":   { "cidade": 6.0, "estrada": 8.0 }
+    }
+  },
+  "logan-2020": {
+    "slug": "logan-2020",
+    "marca": "Renault",
+    "modelo": "Logan",
+    "ano": 2020,
+    "tanque": 50,
+    "autonomia": {
+      "gasolina": { "cidade": 9.6, "estrada": 12.4 },
+      "etanol":   { "cidade": 6.6, "estrada": 8.5 }
+    }
+  },
+  "kicks-2023": {
+    "slug": "kicks-2023",
+    "marca": "Nissan",
+    "modelo": "Kicks",
+    "ano": 2023,
+    "tanque": 41,
+    "autonomia": {
+      "gasolina": { "cidade": 9.6, "estrada": 12.5 },
+      "etanol":   { "cidade": 6.7, "estrada": 8.7 }
+    }
+  },
+  "versa-2022": {
+    "slug": "versa-2022",
+    "marca": "Nissan",
+    "modelo": "Versa",
+    "ano": 2022,
+    "tanque": 41,
+    "autonomia": {
+      "gasolina": { "cidade": 10.6, "estrada": 13.5 },
+      "etanol":   { "cidade": 7.4, "estrada": 9.3 }
+    }
+  },
+  "saveiro-2022": {
+    "slug": "saveiro-2022",
+    "marca": "Volkswagen",
+    "modelo": "Saveiro",
+    "ano": 2022,
+    "tanque": 55,
+    "autonomia": {
+      "gasolina": { "cidade": 10.6, "estrada": 13.4 },
+      "etanol":   { "cidade": 7.3, "estrada": 9.2 }
+    }
+  },
+  "virtus-2022": {
+    "slug": "virtus-2022",
+    "marca": "Volkswagen",
+    "modelo": "Virtus",
+    "ano": 2022,
+    "tanque": 52,
+    "autonomia": {
+      "gasolina": { "cidade": 10.4, "estrada": 13.5 },
+      "etanol":   { "cidade": 7.2, "estrada": 9.3 }
+    }
+  },
+  "nivus-2023": {
+    "slug": "nivus-2023",
+    "marca": "Volkswagen",
+    "modelo": "Nivus",
+    "ano": 2023,
+    "tanque": 52,
+    "autonomia": {
+      "gasolina": { "cidade": 10.0, "estrada": 13.0 },
+      "etanol":   { "cidade": 6.9, "estrada": 9.0 }
+    }
+  },
+  "voyage-2020": {
+    "slug": "voyage-2020",
+    "marca": "Volkswagen",
+    "modelo": "Voyage",
+    "ano": 2020,
+    "tanque": 55,
+    "autonomia": {
+      "gasolina": { "cidade": 11.0, "estrada": 14.2 },
+      "etanol":   { "cidade": 7.6, "estrada": 9.8 }
+    }
+  },
+  "yaris-2022": {
+    "slug": "yaris-2022",
+    "marca": "Toyota",
+    "modelo": "Yaris",
+    "ano": 2022,
+    "tanque": 47,
+    "autonomia": {
+      "gasolina": { "cidade": 11.2, "estrada": 14.0 },
+      "etanol":   { "cidade": 7.7, "estrada": 9.6 }
+    }
+  },
+  "corolla-cross-2023": {
+    "slug": "corolla-cross-2023",
+    "marca": "Toyota",
+    "modelo": "Corolla Cross",
+    "ano": 2023,
+    "tanque": 47,
+    "autonomia": {
+      "gasolina": { "cidade": 9.5, "estrada": 12.5 },
+      "etanol":   { "cidade": 6.5, "estrada": 8.6 }
+    }
+  },
+  "etios-2020": {
+    "slug": "etios-2020",
+    "marca": "Toyota",
+    "modelo": "Etios",
+    "ano": 2020,
+    "tanque": 45,
+    "autonomia": {
+      "gasolina": { "cidade": 11.5, "estrada": 14.5 },
+      "etanol":   { "cidade": 8.0, "estrada": 10.0 }
+    }
+  },
+  "fit-2019": {
+    "slug": "fit-2019",
+    "marca": "Honda",
+    "modelo": "Fit",
+    "ano": 2019,
+    "tanque": 40,
+    "autonomia": {
+      "gasolina": { "cidade": 11.0, "estrada": 14.0 },
+      "etanol":   { "cidade": 7.5, "estrada": 9.6 }
+    }
+  },
+  "city-2022": {
+    "slug": "city-2022",
+    "marca": "Honda",
+    "modelo": "City",
+    "ano": 2022,
+    "tanque": 40,
+    "autonomia": {
+      "gasolina": { "cidade": 11.5, "estrada": 14.5 },
+      "etanol":   { "cidade": 8.0, "estrada": 10.0 }
+    }
+  },
+  "hr-v-2022": {
+    "slug": "hr-v-2022",
+    "marca": "Honda",
+    "modelo": "HR-V",
+    "ano": 2022,
+    "tanque": 50,
+    "autonomia": {
+      "gasolina": { "cidade": 9.5, "estrada": 12.5 },
+      "etanol":   { "cidade": 6.5, "estrada": 8.6 }
+    }
+  },
+  "ecosport-2020": {
+    "slug": "ecosport-2020",
+    "marca": "Ford",
+    "modelo": "EcoSport",
+    "ano": 2020,
+    "tanque": 52,
+    "autonomia": {
+      "gasolina": { "cidade": 9.0, "estrada": 12.0 },
+      "etanol":   { "cidade": 6.2, "estrada": 8.3 }
+    }
+  },
+  "ka-2020": {
+    "slug": "ka-2020",
+    "marca": "Ford",
+    "modelo": "Ka",
+    "ano": 2020,
+    "tanque": 42,
+    "autonomia": {
+      "gasolina": { "cidade": 12.0, "estrada": 14.5 },
+      "etanol":   { "cidade": 8.4, "estrada": 10.0 }
+    }
+  },
+  "208-2022": {
+    "slug": "208-2022",
+    "marca": "Peugeot",
+    "modelo": "208",
+    "ano": 2022,
+    "tanque": 47,
+    "autonomia": {
+      "gasolina": { "cidade": 10.5, "estrada": 13.2 },
+      "etanol":   { "cidade": 7.2, "estrada": 9.1 }
+    }
+  },
+  "c3-2022": {
+    "slug": "c3-2022",
+    "marca": "Citroën",
+    "modelo": "C3",
+    "ano": 2022,
+    "tanque": 47,
+    "autonomia": {
+      "gasolina": { "cidade": 10.7, "estrada": 13.5 },
+      "etanol":   { "cidade": 7.3, "estrada": 9.3 }
+    }
   }
 }
