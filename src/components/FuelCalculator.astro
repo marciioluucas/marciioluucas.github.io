@@ -2,6 +2,7 @@
 import { vehicles, DEFAULT_SLUG } from '../lib/vehicles';
 import AdSlot from './AdSlot.astro';
 import { AD_SLOTS } from '../lib/ads';
+import History from './History.tsx';
 
 interface Props { initialSlug?: string }
 const { initialSlug = DEFAULT_SLUG } = Astro.props;
@@ -81,6 +82,10 @@ const v = vehicles[initialSlug] ?? vehicles[DEFAULT_SLUG];
 </form>
 
 <div id="resultado" aria-live="polite"></div>
+
+<div class="container-app">
+  <History client:idle />
+</div>
 
 <script>
   import { economiaPorTanque, regraSetenta } from '../lib/calc';
@@ -176,8 +181,41 @@ const v = vehicles[initialSlug] ?? vehicles[DEFAULT_SLUG];
         </div>
         ${card('Cidade', cidade)}
         ${card('Estrada', estrada)}
+        <div id="trip-mount"></div>
+        <div id="share-mount"></div>
       </div>
     `;
     resultadoEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    import('react').then((React) =>
+      Promise.all([
+        import('react-dom/client'),
+        import('./TripCalculator.tsx'),
+        import('./ShareButton.tsx'),
+      ]).then(([{ createRoot }, Trip, Share]) => {
+        const tripMount = document.getElementById('trip-mount');
+        const shareMount = document.getElementById('share-mount');
+        if (tripMount) {
+          createRoot(tripMount).render(
+            React.createElement(Trip.default, {
+              custoGasolinaKm: cidade.custoGasolinaKm,
+              custoEtanolKm: cidade.custoEtanolKm,
+              autonomiaGasolina: parseFloat($('ag-cidade').value),
+              autonomiaEtanol: parseFloat($('ae-cidade').value),
+              tanque,
+            })
+          );
+        }
+        if (shareMount) {
+          createRoot(shareMount).render(
+            React.createElement(Share.default, {
+              vehicleSlug: select.value,
+              precoGasolina: precoG,
+              precoEtanol: precoE,
+            })
+          );
+        }
+      })
+    );
   });
 </script>
