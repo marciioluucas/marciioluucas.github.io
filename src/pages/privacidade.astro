@@ -1,0 +1,56 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SEO from '../components/SEO.astro';
+---
+<Layout title="Política de Privacidade — Fuel Calc">
+  <SEO slot="head"
+    title="Política de Privacidade — Calculadora de Combustível"
+    description="Política de privacidade da Calculadora de Combustível: dados coletados, uso de localStorage, anúncios do Google AdSense e seus direitos."
+  />
+  <section class="container-app py-8 space-y-6">
+    <h1 class="text-3xl font-bold">Política de Privacidade</h1>
+    <p class="text-sm text-muted">Última atualização: 9 de maio de 2026.</p>
+
+    <div class="space-y-4">
+      <h2 class="text-xl font-semibold mt-6">1. Quem somos</h2>
+      <p>A Calculadora de Combustível é um site estático mantido por <a class="underline text-primary" href="https://www.linkedin.com/in/marcio-lucas/">Márcio Lucas</a>, hospedado em <code>marciioluucas.github.io</code>. Para contato: pelo LinkedIn.</p>
+
+      <h2 class="text-xl font-semibold mt-6">2. Dados que coletamos</h2>
+      <p><strong>Não coletamos nem armazenamos dados pessoais em servidores.</strong> Não há cadastro, login ou banco de dados. Todo o cálculo é feito no seu próprio navegador.</p>
+
+      <h2 class="text-xl font-semibold mt-6">3. Armazenamento local (localStorage)</h2>
+      <p>Salvamos algumas preferências apenas no <strong>seu navegador</strong> via <code>localStorage</code>:</p>
+      <ul class="list-disc pl-6 space-y-1">
+        <li>Últimos preços de combustível digitados</li>
+        <li>Seu carro cadastrado (se você optar por salvar)</li>
+        <li>Histórico dos últimos 5 cálculos</li>
+        <li>Configurações da regra dos 70% e tema</li>
+      </ul>
+      <p>Esses dados <strong>nunca saem do seu dispositivo</strong>. Você pode apagá-los a qualquer momento na página <a class="underline text-primary" href="/configuracoes">Configurações</a> ou limpando o cache do navegador.</p>
+
+      <h2 class="text-xl font-semibold mt-6">4. Cookies e anúncios (Google AdSense)</h2>
+      <p>Este site exibe anúncios via <strong>Google AdSense</strong>. O Google e seus parceiros podem usar cookies para servir anúncios baseados em visitas anteriores ao nosso site e a outros sites.</p>
+      <p>Você pode:</p>
+      <ul class="list-disc pl-6 space-y-1">
+        <li>Desativar anúncios personalizados do Google em <a class="underline text-primary" href="https://www.google.com/settings/ads" target="_blank" rel="noopener">google.com/settings/ads</a></li>
+        <li>Optar por não receber cookies de terceiros em <a class="underline text-primary" href="https://www.aboutads.info/" target="_blank" rel="noopener">aboutads.info</a></li>
+        <li>Revisar a política de privacidade do Google em <a class="underline text-primary" href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">policies.google.com/technologies/ads</a></li>
+      </ul>
+
+      <h2 class="text-xl font-semibold mt-6">5. Análise de tráfego</h2>
+      <p>Não usamos Google Analytics nem outras ferramentas próprias de rastreamento. O GitHub Pages (hospedagem) pode coletar logs de servidor padrão (IP, user-agent) sem nossa intervenção.</p>
+
+      <h2 class="text-xl font-semibold mt-6">6. Crianças</h2>
+      <p>Este site não é direcionado a menores de 13 anos e não coleta intencionalmente dados de crianças.</p>
+
+      <h2 class="text-xl font-semibold mt-6">7. Seus direitos (LGPD)</h2>
+      <p>Como não armazenamos dados pessoais em servidores, não há registros para acessar, corrigir ou excluir do nosso lado. Os dados em <code>localStorage</code> estão sob seu controle direto.</p>
+
+      <h2 class="text-xl font-semibold mt-6">8. Mudanças nesta política</h2>
+      <p>Podemos atualizar esta política. A data no topo indica a última revisão.</p>
+
+      <h2 class="text-xl font-semibold mt-6">9. Contato</h2>
+      <p>Dúvidas: <a class="underline text-primary" href="https://www.linkedin.com/in/marcio-lucas/">linkedin.com/in/marcio-lucas</a></p>
+    </div>
+  </section>
+</Layout>
