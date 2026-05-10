@@ -1,0 +1,27 @@
+---
+import { ADSENSE_CLIENT } from '../lib/ads';
+interface Props {
+  slot: string;
+  format?: string;
+  layout?: string;
+  responsive?: boolean;
+  testMode?: boolean;
+}
+const { slot, format = 'auto', layout, responsive = true, testMode = import.meta.env.DEV } = Astro.props;
+---
+{testMode ? (
+  <div class="my-6 grid h-24 place-items-center rounded-md border border-dashed border-border bg-surface text-xs text-muted">
+    AdSlot {slot} ({format})
+  </div>
+) : (
+  <ins class="adsbygoogle my-6 block"
+       style="display:block"
+       data-ad-client={ADSENSE_CLIENT}
+       data-ad-slot={slot}
+       data-ad-format={format}
+       data-ad-layout={layout}
+       data-full-width-responsive={responsive ? 'true' : 'false'}></ins>
+  <script is:inline>
+    (window.adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+)}
