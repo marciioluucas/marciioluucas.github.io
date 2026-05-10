@@ -9,18 +9,40 @@ const v = vehicles[initialSlug] ?? vehicles[DEFAULT_SLUG];
 const fmt = (n: number) => String(n).replace('.', ',');
 
 const inputClass = "mt-1 w-full rounded-md border border-border bg-surface p-3";
+
+// Agrupar veiculos por marca pra cascading selects
+const allVehicles = Object.values(vehicles);
+const marcas = [...new Set(allVehicles.map((x) => x.marca))].sort();
 ---
 <form id="combustivel-form" class="container-app py-4 space-y-6"
       data-tanque={v.tanque}>
-  <div>
-    <label class="block text-base font-medium" for="vehicle-select">Qual é o seu carro?</label>
-    <select id="vehicle-select" class="mt-1 w-full rounded-md border border-border bg-surface p-4 text-base">
-      {Object.values(vehicles).map((veh) => (
-        <option value={veh.slug} selected={veh.slug === v.slug}>
-          {veh.marca} {veh.modelo} {veh.ano}
-        </option>
-      ))}
-    </select>
+  <div class="space-y-3">
+    <label class="block text-base font-medium" for="marca-select">Qual é o seu carro?</label>
+
+    <button type="button" id="meu-carro-btn"
+            class="hidden w-full rounded-md border-2 border-accent bg-accent/10 p-3 text-left text-base">
+      ⭐ Usar meu carro: <span id="meu-carro-btn-text"></span>
+    </button>
+
+    <div class="grid gap-3 sm:grid-cols-3">
+      <div>
+        <span class="block text-sm text-muted">Marca</span>
+        <select id="marca-select" class="mt-1 w-full rounded-md border border-border bg-surface p-4 text-base">
+          {marcas.map((m) => (
+            <option value={m} selected={m === v.marca}>{m}</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <span class="block text-sm text-muted">Modelo</span>
+        <select id="modelo-select" class="mt-1 w-full rounded-md border border-border bg-surface p-4 text-base"></select>
+      </div>
+      <div>
+        <span class="block text-sm text-muted">Versão / Ano</span>
+        <select id="versao-select" class="mt-1 w-full rounded-md border border-border bg-surface p-4 text-base"></select>
+      </div>
+    </div>
+    <input type="hidden" id="vehicle-select" value={v.slug} />
   </div>
 
   <details id="meu-carro-details" class="rounded-md border border-border bg-surface">
@@ -195,7 +217,56 @@ const inputClass = "mt-1 w-full rounded-md border border-border bg-surface p-3";
     });
   });
 
-  // ---- meu carro: cadastro / edicao / remocao ----
+  // ---- cascading select: marca -> modelo -> versao ----
+  const marcaSelect = document.getElementById('marca-select') as HTMLSelectElement;
+  const modeloSelect = document.getElementById('modelo-select') as HTMLSelectElement;
+  const versaoSelect = document.getElementById('versao-select') as HTMLSelectElement;
+  const meuCarroBtn = document.getElementById('meu-carro-btn') as HTMLButtonElement;
+  const meuCarroBtnText = document.getElementById('meu-carro-btn-text')!;
+
+  function modelosByMarca(marca: string): string[] {
+    const set = new Set<string>();
+    for (const v of Object.values(vehicles)) {
+      if (v.marca === marca) set.add(v.modelo);
+    }
+    return [...set].sort();
+  }
+  function versoesByMarcaModelo(marca: string, modelo: string) {
+    return Object.values(vehicles)
+      .filter((v) => v.marca === marca && v.modelo === modelo)
+      .sort((a, b) => b.ano - a.ano);
+  }
+  function fillModelos(marca: string, preferModelo?: string) {
+    const items = modelosByMarca(marca);
+    modeloSelect.innerHTML = items
+      .map((m) => `<option value="${m}"${m === preferModelo ? ' selected' : ''}>${m}</option>`)
+      .join('');
+    fillVersoes(marca, modeloSelect.value);
+  }
+  function fillVersoes(marca: string, modelo: string, preferSlug?: string) {
+    const items = versoesByMarcaModelo(marca, modelo);
+    versaoSelect.innerHTML = items
+      .map((v) => `<option value="${v.slug}"${v.slug === preferSlug ? ' selected' : ''}>${v.ano}</option>`)
+      .join('');
+    select.value = versaoSelect.value;
+    applyVehicle(versaoSelect.value);
+  }
+  function syncCascadeFromSlug(slug: string) {
+    const v = vehicles[slug];
+    if (!v) return;
+    marcaSelect.value = v.marca;
+    fillModelos(v.marca, v.modelo);
+    modeloSelect.value = v.modelo;
+    fillVersoes(v.marca, v.modelo, v.slug);
+  }
+  marcaSelect.addEventListener('change', () => fillModelos(marcaSelect.value));
+  modeloSelect.addEventListener('change', () => fillVersoes(marcaSelect.value, modeloSelect.value));
+  versaoSelect.addEventListener('change', () => {
+    select.value = versaoSelect.value;
+    applyVehicle(versaoSelect.value);
+  });
+
+  // ---- meu carro: botao topo + cadastro / edicao / remocao ----
   const detailsEl = document.getElementById('meu-carro-details') as HTMLDetailsElement;
   const summaryText = document.getElementById('meu-carro-summary-text')!;
   const removerBtn = document.getElementById('mc-remover')!;
@@ -203,17 +274,9 @@ const inputClass = "mt-1 w-full rounded-md border border-border bg-surface p-3";
 
   function refreshUserVehicleOption() {
     const uv = storage.getUserVehicle();
-    const existing = select.querySelector(`option[value="${USER_SLUG}"]`);
     if (uv) {
-      const label = `⭐ Meu carro: ${uv.marca} ${uv.modelo} ${uv.ano}`;
-      if (existing) {
-        existing.textContent = label;
-      } else {
-        const opt = document.createElement('option');
-        opt.value = USER_SLUG;
-        opt.textContent = label;
-        select.insertBefore(opt, select.firstChild);
-      }
+      meuCarroBtnText.textContent = `${uv.marca} ${uv.modelo} ${uv.ano}`;
+      meuCarroBtn.classList.remove('hidden');
       summaryText.textContent = `Meu carro: ${uv.marca} ${uv.modelo} ${uv.ano}`;
       (removerBtn as HTMLElement).classList.remove('hidden');
       $('mc-marca').value = uv.marca;
@@ -225,11 +288,18 @@ const inputClass = "mt-1 w-full rounded-md border border-border bg-surface p-3";
       $('mc-ag-estrada').value = fmtDec(uv.autonomia.gasolina.estrada);
       $('mc-ae-estrada').value = fmtDec(uv.autonomia.etanol.estrada);
     } else {
-      if (existing) existing.remove();
+      meuCarroBtn.classList.add('hidden');
       summaryText.textContent = 'Cadastrar meu carro';
       (removerBtn as HTMLElement).classList.add('hidden');
     }
   }
+
+  meuCarroBtn.addEventListener('click', () => {
+    select.value = USER_SLUG;
+    applyVehicle(USER_SLUG);
+    meuCarroBtn.classList.add('ring-2', 'ring-accent');
+    setTimeout(() => meuCarroBtn.classList.remove('ring-2', 'ring-accent'), 800);
+  });
 
   function applyUserVehicle(uv: StoredVehicle) {
     $('ag-cidade').value = fmtDec(uv.autonomia.gasolina.cidade);
@@ -295,10 +365,16 @@ const inputClass = "mt-1 w-full rounded-md border border-border bg-surface p-3";
   // init
   refreshUserVehicleOption();
 
+  // cascading inicial baseada no slug atual
+  syncCascadeFromSlug(select.value);
+
   const params = decodeShare(window.location.search);
-  if (params.v && (vehicles[params.v] || params.v === USER_SLUG)) {
+  if (params.v && vehicles[params.v]) {
     select.value = params.v;
-    applyVehicle(params.v);
+    syncCascadeFromSlug(params.v);
+  } else if (params.v === USER_SLUG && storage.getUserVehicle()) {
+    select.value = USER_SLUG;
+    applyVehicle(USER_SLUG);
   } else if (storage.getUserVehicle()) {
     select.value = USER_SLUG;
     applyVehicle(USER_SLUG);
