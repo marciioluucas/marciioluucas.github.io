@@ -18,8 +18,12 @@ export default function TripCalculator(p: Props) {
       <h3 className="text-lg font-semibold">Cálculo de viagem</h3>
       <label className="mt-3 block">
         <span className="text-sm text-muted">Quantos km vai rodar?</span>
-        <input type="number" inputMode="decimal" min={0} step={1}
-          value={km || ''} onChange={(e) => setKm(parseFloat(e.target.value) || 0)}
+        <input type="text" inputMode="numeric" pattern="[0-9]*"
+          value={km || ''}
+          onChange={(e) => {
+            const digits = e.target.value.replace(/[^\d]/g, '');
+            setKm(digits ? parseInt(digits, 10) : 0);
+          }}
           className="mt-1 w-full rounded-md border border-border bg-bg p-3" />
       </label>
       {valid && (
