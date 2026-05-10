@@ -1,0 +1,26 @@
+[
+  {
+    "q": "Etanol ou gasolina: qual compensa mais?",
+    "a": "Depende do preço relativo. A regra prática: se o etanol custa até 70% do preço da gasolina, ele compensa. Acima disso, a gasolina rende mais por real gasto. Mas o ideal é calcular com a autonomia real do seu carro."
+  },
+  {
+    "q": "Como funciona a regra dos 70%?",
+    "a": "Etanol tem cerca de 70% da eficiência energética da gasolina. Se ele estiver custando 70% ou menos do preço da gasolina, vale abastecer com etanol. Você pode ajustar esse limite em Configurações conforme seu carro."
+  },
+  {
+    "q": "Como descubro a autonomia real do meu carro?",
+    "a": "Ao abastecer, zere o hodômetro parcial. No próximo abastecimento, divida os km rodados pelos litros que entraram. Faça isso 3-4 vezes em condições parecidas (cidade ou estrada) e tire a média."
+  },
+  {
+    "q": "Por que separar cidade e estrada?",
+    "a": "Carros consomem diferente em cada situação. Cidade tem paradas, semáforos e baixa velocidade — consumo maior. Estrada tem velocidade constante — consumo menor. Calcular separado dá resultado mais preciso."
+  },
+  {
+    "q": "Os preços salvos ficam onde?",
+    "a": "Apenas no seu navegador (localStorage). Nada é enviado para servidores. Você pode limpar tudo em Configurações."
+  },
+  {
+    "q": "Funciona para carros flex apenas?",
+    "a": "Sim, a calculadora foi desenhada pra carros flex. Para carros 100% gasolina ou diesel, a comparação não se aplica."
+  }
+]

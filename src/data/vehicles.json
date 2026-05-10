@@ -1,0 +1,112 @@
+{
+  "civic-2018": {
+    "slug": "civic-2018",
+    "marca": "Honda",
+    "modelo": "Civic EXL",
+    "ano": 2018,
+    "tanque": 56,
+    "autonomia": {
+      "gasolina": { "cidade": 8.5, "estrada": 14.07 },
+      "etanol":   { "cidade": 5.4, "estrada": 10.7 }
+    }
+  },
+  "gol-1.0-2020": {
+    "slug": "gol-1.0-2020",
+    "marca": "Volkswagen",
+    "modelo": "Gol 1.0",
+    "ano": 2020,
+    "tanque": 55,
+    "autonomia": {
+      "gasolina": { "cidade": 11.5, "estrada": 14.0 },
+      "etanol":   { "cidade": 7.8, "estrada": 9.6 }
+    }
+  },
+  "hb20-1.0-2022": {
+    "slug": "hb20-1.0-2022",
+    "marca": "Hyundai",
+    "modelo": "HB20 1.0",
+    "ano": 2022,
+    "tanque": 50,
+    "autonomia": {
+      "gasolina": { "cidade": 11.8, "estrada": 14.4 },
+      "etanol":   { "cidade": 8.2, "estrada": 9.9 }
+    }
+  },
+  "onix-1.0-2023": {
+    "slug": "onix-1.0-2023",
+    "marca": "Chevrolet",
+    "modelo": "Onix 1.0",
+    "ano": 2023,
+    "tanque": 44,
+    "autonomia": {
+      "gasolina": { "cidade": 11.3, "estrada": 14.6 },
+      "etanol":   { "cidade": 7.9, "estrada": 10.1 }
+    }
+  },
+  "corolla-xei-2022": {
+    "slug": "corolla-xei-2022",
+    "marca": "Toyota",
+    "modelo": "Corolla XEi",
+    "ano": 2022,
+    "tanque": 60,
+    "autonomia": {
+      "gasolina": { "cidade": 9.8, "estrada": 13.5 },
+      "etanol":   { "cidade": 6.7, "estrada": 9.3 }
+    }
+  },
+  "compass-2021": {
+    "slug": "compass-2021",
+    "marca": "Jeep",
+    "modelo": "Compass",
+    "ano": 2021,
+    "tanque": 60,
+    "autonomia": {
+      "gasolina": { "cidade": 7.8, "estrada": 11.5 },
+      "etanol":   { "cidade": 5.5, "estrada": 8.1 }
+    }
+  },
+  "renegade-2020": {
+    "slug": "renegade-2020",
+    "marca": "Jeep",
+    "modelo": "Renegade",
+    "ano": 2020,
+    "tanque": 48,
+    "autonomia": {
+      "gasolina": { "cidade": 8.6, "estrada": 12.2 },
+      "etanol":   { "cidade": 5.9, "estrada": 8.5 }
+    }
+  },
+  "polo-2022": {
+    "slug": "polo-2022",
+    "marca": "Volkswagen",
+    "modelo": "Polo",
+    "ano": 2022,
+    "tanque": 52,
+    "autonomia": {
+      "gasolina": { "cidade": 10.9, "estrada": 13.8 },
+      "etanol":   { "cidade": 7.5, "estrada": 9.5 }
+    }
+  },
+  "t-cross-2022": {
+    "slug": "t-cross-2022",
+    "marca": "Volkswagen",
+    "modelo": "T-Cross",
+    "ano": 2022,
+    "tanque": 52,
+    "autonomia": {
+      "gasolina": { "cidade": 9.4, "estrada": 12.7 },
+      "etanol":   { "cidade": 6.5, "estrada": 8.8 }
+    }
+  },
+  "strada-2023": {
+    "slug": "strada-2023",
+    "marca": "Fiat",
+    "modelo": "Strada",
+    "ano": 2023,
+    "tanque": 55,
+    "autonomia": {
+      "gasolina": { "cidade": 10.1, "estrada": 13.6 },
+      "etanol":   { "cidade": 7.0, "estrada": 9.4 }
+    }
+  }
+}
