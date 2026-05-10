@@ -1,0 +1,183 @@
+---
+import { vehicles, DEFAULT_SLUG } from '../lib/vehicles';
+import AdSlot from './AdSlot.astro';
+import { AD_SLOTS } from '../lib/ads';
+
+interface Props { initialSlug?: string }
+const { initialSlug = DEFAULT_SLUG } = Astro.props;
+const v = vehicles[initialSlug] ?? vehicles[DEFAULT_SLUG];
+---
+<form id="combustivel-form" class="container-app py-4 space-y-6"
+      data-tanque={v.tanque}>
+  <div>
+    <label class="block text-sm text-muted" for="vehicle-select">Veículo</label>
+    <select id="vehicle-select" class="mt-1 w-full rounded-md border border-border bg-surface p-3">
+      {Object.values(vehicles).map((veh) => (
+        <option value={veh.slug} selected={veh.slug === v.slug}>
+          {veh.marca} {veh.modelo} {veh.ano}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  <fieldset class="space-y-3">
+    <legend class="text-base font-semibold">Cidade — autonomia (km/l)</legend>
+    <div class="grid gap-3 sm:grid-cols-2">
+      <label class="block">
+        <span class="text-sm text-muted">Gasolina</span>
+        <input id="ag-cidade" type="number" inputmode="decimal" step="0.01" min="0"
+               value={v.autonomia.gasolina.cidade}
+               class="mt-1 w-full rounded-md border border-border bg-surface p-3" />
+      </label>
+      <label class="block">
+        <span class="text-sm text-muted">Etanol</span>
+        <input id="ae-cidade" type="number" inputmode="decimal" step="0.01" min="0"
+               value={v.autonomia.etanol.cidade}
+               class="mt-1 w-full rounded-md border border-border bg-surface p-3" />
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset class="space-y-3">
+    <legend class="text-base font-semibold">Estrada — autonomia (km/l)</legend>
+    <div class="grid gap-3 sm:grid-cols-2">
+      <label class="block">
+        <span class="text-sm text-muted">Gasolina</span>
+        <input id="ag-estrada" type="number" inputmode="decimal" step="0.01" min="0"
+               value={v.autonomia.gasolina.estrada}
+               class="mt-1 w-full rounded-md border border-border bg-surface p-3" />
+      </label>
+      <label class="block">
+        <span class="text-sm text-muted">Etanol</span>
+        <input id="ae-estrada" type="number" inputmode="decimal" step="0.01" min="0"
+               value={v.autonomia.etanol.estrada}
+               class="mt-1 w-full rounded-md border border-border bg-surface p-3" />
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset class="space-y-3">
+    <legend class="text-base font-semibold">Preços (R$/litro)</legend>
+    <div class="grid gap-3 sm:grid-cols-2">
+      <label class="block">
+        <span class="text-sm text-muted">Gasolina</span>
+        <input id="preco-g" type="number" inputmode="decimal" step="0.01" min="0"
+               value="4.90"
+               class="mt-1 w-full rounded-md border border-border bg-surface p-3" />
+      </label>
+      <label class="block">
+        <span class="text-sm text-muted">Etanol</span>
+        <input id="preco-e" type="number" inputmode="decimal" step="0.01" min="0"
+               value="3.79"
+               class="mt-1 w-full rounded-md border border-border bg-surface p-3" />
+      </label>
+    </div>
+  </fieldset>
+
+  <button type="submit"
+          class="w-full rounded-md bg-primary py-4 text-base font-bold text-bg active:scale-[0.99]">
+    Calcular
+  </button>
+</form>
+
+<div id="resultado" aria-live="polite"></div>
+
+<script>
+  import { economiaPorTanque, regraSetenta } from '../lib/calc';
+  import { storage } from '../lib/storage';
+  import { vehicles, DEFAULT_SLUG } from '../lib/vehicles';
+  import { decodeShare } from '../lib/share';
+
+  const form = document.getElementById('combustivel-form') as HTMLFormElement;
+  const select = document.getElementById('vehicle-select') as HTMLSelectElement;
+  const resultadoEl = document.getElementById('resultado')!;
+
+  const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+
+  function applyVehicle(slug: string) {
+    const v = vehicles[slug];
+    if (!v) return;
+    $('ag-cidade').value = String(v.autonomia.gasolina.cidade);
+    $('ae-cidade').value = String(v.autonomia.etanol.cidade);
+    $('ag-estrada').value = String(v.autonomia.gasolina.estrada);
+    $('ae-estrada').value = String(v.autonomia.etanol.estrada);
+    form.dataset.tanque = String(v.tanque);
+  }
+
+  // restore from URL or last prices
+  const params = decodeShare(window.location.search);
+  if (params.v && vehicles[params.v]) {
+    select.value = params.v;
+    applyVehicle(params.v);
+  }
+  if (params.g) $('preco-g').value = params.g.toFixed(2);
+  if (params.e) $('preco-e').value = params.e.toFixed(2);
+  if (!params.g && !params.e) {
+    const last = storage.getLastPrices();
+    if (last.gasolina) $('preco-g').value = last.gasolina.toFixed(2);
+    if (last.etanol) $('preco-e').value = last.etanol.toFixed(2);
+  }
+
+  select.addEventListener('change', () => applyVehicle(select.value));
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const tanque = Number(form.dataset.tanque ?? 50);
+    const precoG = parseFloat($('preco-g').value);
+    const precoE = parseFloat($('preco-e').value);
+    const cidade = economiaPorTanque({
+      precoGasolina: precoG, autonomiaGasolina: parseFloat($('ag-cidade').value),
+      precoEtanol: precoE, autonomiaEtanol: parseFloat($('ae-cidade').value),
+      tanque,
+    });
+    const estrada = economiaPorTanque({
+      precoGasolina: precoG, autonomiaGasolina: parseFloat($('ag-estrada').value),
+      precoEtanol: precoE, autonomiaEtanol: parseFloat($('ae-estrada').value),
+      tanque,
+    });
+    const settings = storage.getSettings();
+    const r70 = regraSetenta(precoE, precoG, settings.regra70);
+
+    storage.setLastPrices({ gasolina: precoG, etanol: precoE });
+    storage.pushHistory({
+      ts: Date.now(), vehicleSlug: select.value,
+      prices: { gasolina: precoG, etanol: precoE },
+      vencedorCidade: cidade.vencedor, vencedorEstrada: estrada.vencedor,
+    });
+
+    const fmt = (n: number) => n.toFixed(2).replace('.', ',');
+    const tone = r70.vale ? 'border-accent bg-accent/10' : 'border-danger bg-danger/10';
+    const valeLabel = r70.vale ? '<span class="text-accent">✅ Compensa</span>' : '<span class="text-danger">❌ Não compensa</span>';
+    const card = (titulo: string, c: typeof cidade) => `
+      <section class="mt-6 rounded-lg bg-surface p-4">
+        <h3 class="text-lg font-semibold">${titulo}</h3>
+        <div class="mt-3 grid gap-3 sm:grid-cols-2">
+          <article class="${c.vencedor === 'gasolina' ? 'bg-primary/10 border border-primary/30' : 'bg-bg/40'} rounded-md p-3">
+            <p class="text-xs uppercase tracking-wide text-muted">Gasolina ${c.vencedor === 'gasolina' ? '★' : ''}</p>
+            <p class="mt-1 text-2xl font-bold text-primary">R$ ${fmt(c.custoGasolinaKm)}<span class="text-xs text-muted">/km</span></p>
+            <p class="mt-1 text-sm text-muted">Tanque: ${c.autonomiaTanqueGasolina.toFixed(0)} km</p>
+          </article>
+          <article class="${c.vencedor === 'etanol' ? 'bg-accent/10 border border-accent/30' : 'bg-bg/40'} rounded-md p-3">
+            <p class="text-xs uppercase tracking-wide text-muted">Etanol ${c.vencedor === 'etanol' ? '★' : ''}</p>
+            <p class="mt-1 text-2xl font-bold text-accent">R$ ${fmt(c.custoEtanolKm)}<span class="text-xs text-muted">/km</span></p>
+            <p class="mt-1 text-sm text-muted">Tanque: ${c.autonomiaTanqueEtanol.toFixed(0)} km</p>
+          </article>
+        </div>
+        ${c.economiaRs > 0 ? `<p class="mt-3 text-sm">Economia por tanque: <strong class="text-accent">R$ ${fmt(c.economiaRs)}</strong></p>` : ''}
+      </section>
+    `;
+    const lim = (settings.regra70 * 100).toFixed(0);
+    const pct = (r70.ratio * 100).toFixed(0);
+    resultadoEl.innerHTML = `
+      <div class="container-app">
+        <div class="mt-6 rounded-lg border p-4 ${tone}">
+          <p class="text-sm text-muted">Regra dos ${lim}%</p>
+          <p class="mt-1 text-lg font-semibold">Etanol em <strong>${pct}%</strong> do preço da gasolina — ${valeLabel}</p>
+        </div>
+        ${card('Cidade', cidade)}
+        ${card('Estrada', estrada)}
+      </div>
+    `;
+    resultadoEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+</script>

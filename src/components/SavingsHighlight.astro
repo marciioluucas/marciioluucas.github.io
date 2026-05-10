@@ -1,0 +1,17 @@
+---
+interface Props {
+  ratio: number;
+  vale: boolean;
+  limite: number;
+}
+const { ratio, vale, limite } = Astro.props;
+const pct = (ratio * 100).toFixed(0);
+const limPct = (limite * 100).toFixed(0);
+---
+<div class={`mt-6 rounded-lg border p-4 ${vale ? 'border-accent bg-accent/10' : 'border-danger bg-danger/10'}`}>
+  <p class="text-sm text-muted">Regra dos {limPct}%</p>
+  <p class="mt-1 text-lg font-semibold">
+    Etanol está em <strong>{pct}%</strong> do preço da gasolina —
+    {vale ? <span class="text-accent">✅ Compensa</span> : <span class="text-danger">❌ Não compensa</span>}
+  </p>
+</div>

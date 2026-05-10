@@ -2,16 +2,24 @@
 import Layout from '../layouts/Layout.astro';
 import SEO from '../components/SEO.astro';
 import AdSlot from '../components/AdSlot.astro';
+import FuelCalculator from '../components/FuelCalculator.astro';
 import { AD_SLOTS } from '../lib/ads';
 ---
 <Layout title="Calculadora de Combustível">
   <SEO slot="head"
-    title="Calculadora de Combustível: Etanol ou Gasolina? Calcule Já"
-    description="Descubra qual combustível compensa pra seu carro. Calculadora rápida de etanol vs gasolina com regra dos 70% e preset Honda Civic 2018."
+    title="Calculadora de Combustível: Etanol ou Gasolina? — Vale a Pena"
+    description="Calcule rápido qual combustível compensa: etanol ou gasolina. Mobile-first, com regra dos 70% e suporte a múltiplos veículos."
   />
-  <section class="container-app py-8">
+  <section class="container-app pt-8 pb-2">
     <h1 class="text-3xl font-bold sm:text-4xl">Etanol ou Gasolina?</h1>
-    <p class="mt-2 text-muted">Calcule qual combustível compensa pro seu carro.</p>
+    <p class="mt-2 text-muted">Calcule em segundos qual combustível rende mais pro seu carro.</p>
     <AdSlot slot={AD_SLOTS.afterHero} />
   </section>
+  <FuelCalculator />
+  <div class="container-app">
+    <AdSlot slot={AD_SLOTS.inArticle} format="fluid" layout="in-article" />
+  </div>
+  <div class="container-app">
+    <AdSlot slot={AD_SLOTS.footer} />
+  </div>
 </Layout>

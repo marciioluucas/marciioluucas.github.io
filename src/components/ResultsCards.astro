@@ -1,0 +1,31 @@
+---
+interface ContextoProps {
+  titulo: string;
+  vencedor: 'gasolina' | 'etanol';
+  custoGasolinaKm: number;
+  custoEtanolKm: number;
+  autonomiaTanqueGasolina: number;
+  autonomiaTanqueEtanol: number;
+  economiaRs: number;
+}
+const p = Astro.props as ContextoProps;
+const fmt = (n: number) => n.toFixed(2).replace('.', ',');
+---
+<section class="mt-6 rounded-lg bg-surface p-4">
+  <h3 class="text-lg font-semibold">{p.titulo}</h3>
+  <div class="mt-3 grid gap-3 sm:grid-cols-2">
+    <article class={`rounded-md p-3 ${p.vencedor === 'gasolina' ? 'bg-primary/10 border border-primary/30' : 'bg-bg/40'}`}>
+      <p class="text-xs uppercase tracking-wide text-muted">Gasolina {p.vencedor === 'gasolina' && <span aria-hidden="true">★</span>}</p>
+      <p class="mt-1 text-2xl font-bold text-primary">R$ {fmt(p.custoGasolinaKm)}<span class="text-xs text-muted">/km</span></p>
+      <p class="mt-1 text-sm text-muted">Tanque: {p.autonomiaTanqueGasolina.toFixed(0)} km</p>
+    </article>
+    <article class={`rounded-md p-3 ${p.vencedor === 'etanol' ? 'bg-accent/10 border border-accent/30' : 'bg-bg/40'}`}>
+      <p class="text-xs uppercase tracking-wide text-muted">Etanol {p.vencedor === 'etanol' && <span aria-hidden="true">★</span>}</p>
+      <p class="mt-1 text-2xl font-bold text-accent">R$ {fmt(p.custoEtanolKm)}<span class="text-xs text-muted">/km</span></p>
+      <p class="mt-1 text-sm text-muted">Tanque: {p.autonomiaTanqueEtanol.toFixed(0)} km</p>
+    </article>
+  </div>
+  {p.economiaRs > 0 && (
+    <p class="mt-3 text-sm">Economia por tanque: <strong class="text-accent">R$ {fmt(p.economiaRs)}</strong></p>
+  )}
+</section>
