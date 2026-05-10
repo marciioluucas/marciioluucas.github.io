@@ -13,8 +13,8 @@ const inputClass = "mt-1 w-full rounded-md border border-border bg-surface p-3";
 <form id="combustivel-form" class="container-app py-4 space-y-6"
       data-tanque={v.tanque}>
   <div>
-    <label class="block text-sm text-muted" for="vehicle-select">Veículo</label>
-    <select id="vehicle-select" class={inputClass}>
+    <label class="block text-base font-medium" for="vehicle-select">Qual é o seu carro?</label>
+    <select id="vehicle-select" class="mt-1 w-full rounded-md border border-border bg-surface p-4 text-base">
       {Object.values(vehicles).map((veh) => (
         <option value={veh.slug} selected={veh.slug === v.slug}>
           {veh.marca} {veh.modelo} {veh.ano}
@@ -82,57 +82,64 @@ const inputClass = "mt-1 w-full rounded-md border border-border bg-surface p-3";
     </div>
   </details>
 
-  <fieldset class="space-y-3">
-    <legend class="text-base font-semibold">Cidade — autonomia (km/l)</legend>
+  <fieldset class="space-y-4">
+    <legend class="text-lg font-bold">Quanto está custando hoje?</legend>
     <div class="grid gap-3 sm:grid-cols-2">
       <label class="block">
-        <span class="text-sm text-muted">Gasolina</span>
-        <input id="ag-cidade" type="text" inputmode="decimal" data-decimal
-               value={fmt(v.autonomia.gasolina.cidade)} class={inputClass} />
-      </label>
-      <label class="block">
-        <span class="text-sm text-muted">Etanol</span>
-        <input id="ae-cidade" type="text" inputmode="decimal" data-decimal
-               value={fmt(v.autonomia.etanol.cidade)} class={inputClass} />
-      </label>
-    </div>
-  </fieldset>
-
-  <fieldset class="space-y-3">
-    <legend class="text-base font-semibold">Estrada — autonomia (km/l)</legend>
-    <div class="grid gap-3 sm:grid-cols-2">
-      <label class="block">
-        <span class="text-sm text-muted">Gasolina</span>
-        <input id="ag-estrada" type="text" inputmode="decimal" data-decimal
-               value={fmt(v.autonomia.gasolina.estrada)} class={inputClass} />
-      </label>
-      <label class="block">
-        <span class="text-sm text-muted">Etanol</span>
-        <input id="ae-estrada" type="text" inputmode="decimal" data-decimal
-               value={fmt(v.autonomia.etanol.estrada)} class={inputClass} />
-      </label>
-    </div>
-  </fieldset>
-
-  <fieldset class="space-y-3">
-    <legend class="text-base font-semibold">Preços (R$/litro)</legend>
-    <div class="grid gap-3 sm:grid-cols-2">
-      <label class="block">
-        <span class="text-sm text-muted">Gasolina</span>
+        <span class="text-base">Gasolina <span class="text-muted">(R$ por litro)</span></span>
         <input id="preco-g" type="text" inputmode="decimal" data-decimal
-               value="4,90" class={inputClass} />
+               value="4,90" class="mt-1 w-full rounded-md border border-border bg-surface p-4 text-lg" />
       </label>
       <label class="block">
-        <span class="text-sm text-muted">Etanol</span>
+        <span class="text-base">Etanol <span class="text-muted">(R$ por litro)</span></span>
         <input id="preco-e" type="text" inputmode="decimal" data-decimal
-               value="3,79" class={inputClass} />
+               value="3,79" class="mt-1 w-full rounded-md border border-border bg-surface p-4 text-lg" />
       </label>
     </div>
   </fieldset>
+
+  <details class="rounded-md border border-border bg-surface">
+    <summary class="cursor-pointer select-none p-4 text-base font-medium">
+      ⚙️ Ajustar consumo do carro <span class="text-muted text-sm">(opcional)</span>
+    </summary>
+    <div class="space-y-4 p-4 pt-0">
+      <p class="text-sm text-muted">Quantos quilômetros seu carro faz com 1 litro?</p>
+      <fieldset class="space-y-3">
+        <legend class="text-sm font-semibold">Na cidade</legend>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <label class="block">
+            <span class="text-sm text-muted">Gasolina (km/l)</span>
+            <input id="ag-cidade" type="text" inputmode="decimal" data-decimal
+                   value={fmt(v.autonomia.gasolina.cidade)} class={inputClass} />
+          </label>
+          <label class="block">
+            <span class="text-sm text-muted">Etanol (km/l)</span>
+            <input id="ae-cidade" type="text" inputmode="decimal" data-decimal
+                   value={fmt(v.autonomia.etanol.cidade)} class={inputClass} />
+          </label>
+        </div>
+      </fieldset>
+      <fieldset class="space-y-3">
+        <legend class="text-sm font-semibold">Na estrada</legend>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <label class="block">
+            <span class="text-sm text-muted">Gasolina (km/l)</span>
+            <input id="ag-estrada" type="text" inputmode="decimal" data-decimal
+                   value={fmt(v.autonomia.gasolina.estrada)} class={inputClass} />
+          </label>
+          <label class="block">
+            <span class="text-sm text-muted">Etanol (km/l)</span>
+            <input id="ae-estrada" type="text" inputmode="decimal" data-decimal
+                   value={fmt(v.autonomia.etanol.estrada)} class={inputClass} />
+          </label>
+        </div>
+      </fieldset>
+    </div>
+  </details>
 
   <button type="submit"
-          class="w-full rounded-md bg-primary py-4 text-base font-bold text-bg active:scale-[0.99]">
-    Calcular
+          class="w-full rounded-lg bg-primary py-5 text-xl font-bold text-bg shadow-lg active:scale-[0.99]">
+    Descobrir agora
   </button>
 </form>
 
@@ -143,7 +150,7 @@ const inputClass = "mt-1 w-full rounded-md border border-border bg-surface p-3";
 </div>
 
 <script>
-  import { economiaPorTanque, regraSetenta } from '../lib/calc';
+  import { economiaPorTanque } from '../lib/calc';
   import { storage, type StoredVehicle } from '../lib/storage';
   import { vehicles, DEFAULT_SLUG } from '../lib/vehicles';
   import { decodeShare } from '../lib/share';
@@ -321,9 +328,6 @@ const inputClass = "mt-1 w-full rounded-md border border-border bg-surface p-3";
       precoEtanol: precoE, autonomiaEtanol: toNumber($('ae-estrada').value),
       tanque,
     });
-    const settings = storage.getSettings();
-    const r70 = regraSetenta(precoE, precoG, settings.regra70);
-
     storage.setLastPrices({ gasolina: precoG, etanol: precoE });
     storage.pushHistory({
       ts: Date.now(), vehicleSlug: select.value,
@@ -332,36 +336,77 @@ const inputClass = "mt-1 w-full rounded-md border border-border bg-surface p-3";
     });
 
     const fmtBR = (n: number) => n.toFixed(2).replace('.', ',');
-    const tone = r70.vale ? 'border-accent bg-accent/10' : 'border-danger bg-danger/10';
-    const valeLabel = r70.vale ? '<span class="text-accent">✅ Compensa</span>' : '<span class="text-danger">❌ Não compensa</span>';
-    const card = (titulo: string, c: typeof cidade) => `
-      <section class="mt-6 rounded-lg bg-surface p-4">
-        <h3 class="text-lg font-semibold">${titulo}</h3>
+    // Resposta principal: usa o cenario "cidade" como referencia (uso mais comum)
+    const venceuCidade = cidade.vencedor;
+    const venceuEstrada = estrada.vencedor;
+    const mesmaResposta = venceuCidade === venceuEstrada;
+    const economiaPrincipal = mesmaResposta
+      ? Math.max(cidade.economiaRs, estrada.economiaRs)
+      : cidade.economiaRs;
+    const combNome = (c: 'gasolina' | 'etanol') => c === 'gasolina' ? 'GASOLINA' : 'ETANOL';
+    const combCor = (c: 'gasolina' | 'etanol') => c === 'gasolina' ? 'text-primary' : 'text-accent';
+    const respostaCor = mesmaResposta
+      ? (venceuCidade === 'gasolina' ? 'border-primary bg-primary/10' : 'border-accent bg-accent/10')
+      : 'border-border bg-surface';
+
+    let respostaHtml: string;
+    if (mesmaResposta) {
+      respostaHtml = `
+        <div class="text-center py-4">
+          <p class="text-base text-muted">A resposta é</p>
+          <p class="mt-2 text-5xl font-extrabold ${combCor(venceuCidade)}">${combNome(venceuCidade)}</p>
+          ${economiaPrincipal > 0
+            ? `<p class="mt-3 text-lg">Você economiza <strong class="text-accent">R$ ${fmtBR(economiaPrincipal)}</strong> por tanque</p>`
+            : ''}
+        </div>
+      `;
+    } else {
+      respostaHtml = `
+        <div class="text-center py-4">
+          <p class="text-base text-muted">Depende de onde você dirige</p>
+          <div class="mt-3 grid gap-3 sm:grid-cols-2 text-left">
+            <div class="rounded-md bg-bg/40 p-3">
+              <p class="text-sm text-muted">Na cidade</p>
+              <p class="text-2xl font-bold ${combCor(venceuCidade)}">${combNome(venceuCidade)}</p>
+            </div>
+            <div class="rounded-md bg-bg/40 p-3">
+              <p class="text-sm text-muted">Na estrada</p>
+              <p class="text-2xl font-bold ${combCor(venceuEstrada)}">${combNome(venceuEstrada)}</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    const detalheCard = (titulo: string, c: typeof cidade) => `
+      <section class="rounded-lg bg-surface p-4">
+        <h3 class="text-base font-semibold">${titulo}</h3>
         <div class="mt-3 grid gap-3 sm:grid-cols-2">
           <article class="${c.vencedor === 'gasolina' ? 'bg-primary/10 border border-primary/30' : 'bg-bg/40'} rounded-md p-3">
             <p class="text-xs uppercase tracking-wide text-muted">Gasolina ${c.vencedor === 'gasolina' ? '★' : ''}</p>
-            <p class="mt-1 text-2xl font-bold text-primary">R$ ${fmtBR(c.custoGasolinaKm)}<span class="text-xs text-muted">/km</span></p>
-            <p class="mt-1 text-sm text-muted">Tanque: ${c.autonomiaTanqueGasolina.toFixed(0)} km</p>
+            <p class="mt-1 text-xl font-bold text-primary">R$ ${fmtBR(c.custoGasolinaKm)}<span class="text-xs text-muted">/km</span></p>
+            <p class="mt-1 text-xs text-muted">Tanque: ${c.autonomiaTanqueGasolina.toFixed(0)} km</p>
           </article>
           <article class="${c.vencedor === 'etanol' ? 'bg-accent/10 border border-accent/30' : 'bg-bg/40'} rounded-md p-3">
             <p class="text-xs uppercase tracking-wide text-muted">Etanol ${c.vencedor === 'etanol' ? '★' : ''}</p>
-            <p class="mt-1 text-2xl font-bold text-accent">R$ ${fmtBR(c.custoEtanolKm)}<span class="text-xs text-muted">/km</span></p>
-            <p class="mt-1 text-sm text-muted">Tanque: ${c.autonomiaTanqueEtanol.toFixed(0)} km</p>
+            <p class="mt-1 text-xl font-bold text-accent">R$ ${fmtBR(c.custoEtanolKm)}<span class="text-xs text-muted">/km</span></p>
+            <p class="mt-1 text-xs text-muted">Tanque: ${c.autonomiaTanqueEtanol.toFixed(0)} km</p>
           </article>
         </div>
-        ${c.economiaRs > 0 ? `<p class="mt-3 text-sm">Economia por tanque: <strong class="text-accent">R$ ${fmtBR(c.economiaRs)}</strong></p>` : ''}
       </section>
     `;
-    const lim = (settings.regra70 * 100).toFixed(0);
-    const pct = (r70.ratio * 100).toFixed(0);
     resultadoEl.innerHTML = `
       <div class="container-app">
-        <div class="mt-6 rounded-lg border p-4 ${tone}">
-          <p class="text-sm text-muted">Regra dos ${lim}%</p>
-          <p class="mt-1 text-lg font-semibold">Etanol em <strong>${pct}%</strong> do preço da gasolina — ${valeLabel}</p>
+        <div class="mt-6 rounded-xl border-2 p-4 ${respostaCor}">
+          ${respostaHtml}
         </div>
-        ${card('Cidade', cidade)}
-        ${card('Estrada', estrada)}
+        <details class="mt-4 rounded-md border border-border bg-surface">
+          <summary class="cursor-pointer select-none p-3 text-sm text-muted">📊 Ver detalhes do cálculo</summary>
+          <div class="space-y-3 p-3 pt-0">
+            ${detalheCard('Na cidade', cidade)}
+            ${detalheCard('Na estrada', estrada)}
+          </div>
+        </details>
         <div id="trip-mount"></div>
         <div id="share-mount"></div>
       </div>
