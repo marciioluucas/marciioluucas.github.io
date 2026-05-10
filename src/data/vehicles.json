@@ -438,5 +438,27 @@
       "gasolina": { "cidade": 10.7, "estrada": 13.5 },
       "etanol":   { "cidade": 7.3, "estrada": 9.3 }
     }
+  },
+  "virtus-tsi-2024": {
+    "slug": "virtus-tsi-2024",
+    "marca": "Volkswagen",
+    "modelo": "Virtus TSI",
+    "ano": 2024,
+    "tanque": 52,
+    "autonomia": {
+      "gasolina": { "cidade": 11.1, "estrada": 14.2 },
+      "etanol":   { "cidade": 7.6, "estrada": 9.7 }
+    }
+  },
+  "prisma-joy-2019": {
+    "slug": "prisma-joy-2019",
+    "marca": "Chevrolet",
+    "modelo": "Prisma Joy",
+    "ano": 2019,
+    "tanque": 54,
+    "autonomia": {
+      "gasolina": { "cidade": 10.4, "estrada": 13.5 },
+      "etanol":   { "cidade": 7.2, "estrada": 9.4 }
+    }
   }
 }
