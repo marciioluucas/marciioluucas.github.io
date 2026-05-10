@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://marciioluucas.github.io/sitemap-index.xml
