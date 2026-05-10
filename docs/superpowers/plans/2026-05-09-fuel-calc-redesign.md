@@ -1,138 +1,127 @@
-# Calculadora de Combustível v2 — Implementation Plan
+# Fuel Calculator v2 Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Reescrever a calculadora de combustível como app Astro estático, mobile-first, com SEO completo, suporte multi-veículo, localStorage e 3 slots AdSense — preservando o preset Civic EXL 2018 e o domínio GitHub Pages atual.
+**Goal:** Reescrever a calculadora de combustível como app Astro estático, mobile-first, multi-veículo (preset Civic EXL 2018 preservado), com SEO state-of-the-art e 3 slots AdSense, mantendo deploy no GitHub Pages.
 
-**Architecture:** Astro 5 (output static) + Tailwind 4 + TypeScript estrito. Lógica de cálculo isolada em `lib/calc.ts` (puro, testado com Vitest). Páginas estáticas geradas via `getStaticPaths` a partir de `vehicles.json`. Componentes interativos como ilhas (React) só onde precisar (selector, history, share, trip, settings). Persistência em localStorage com namespace `fuelcalc:`. AdSense via componente `<AdSlot>` reutilizável.
+**Architecture:** Astro 5 (output static) + Tailwind 4 + TypeScript estrito. Lógica de cálculo em módulo puro testável (Vitest). Persistência via localStorage. Geração estática de páginas por veículo via `getStaticPaths`. SEO via componente `<SEO>` reutilizável + JSON-LD + sitemap automático + OG images dinâmicas.
 
-**Tech Stack:** Astro 5, Tailwind CSS 4, TypeScript, Vitest, React 19 (islands), Chart.js (lazy), @astrojs/sitemap, @astrojs/react, GitHub Actions.
+**Tech Stack:** Astro 5, Tailwind CSS 4, TypeScript, Vitest, Chart.js (lazy), @astrojs/sitemap, GitHub Actions.
 
-**Spec:** `docs/superpowers/specs/2026-05-09-fuel-calc-redesign-design.md`
-
----
-
-## File Structure
-
-```
-src/
-  components/
-    AdSlot.astro              componente AdSense (handle dev placeholder)
-    FAQ.astro                 lista FAQ visível (casa com FAQPage schema)
-    Footer.astro              footer com links + créditos
-    FuelCalculator.astro      form principal + lógica vanilla TS
-    Header.astro              header sticky compacto
-    History.tsx               ilha React: histórico localStorage
-    ResultsCards.astro        resultados em cards (mobile) / tabela (md+)
-    ResultsChart.tsx          ilha React: Chart.js comparativo (lazy)
-    SEO.astro                 meta + OG + JSON-LD por página
-    SavingsHighlight.astro    banner regra dos 70%
-    ShareButton.tsx           ilha React: navigator.share + fallback clipboard
-    TripCalculator.tsx        ilha React: km a rodar → custo
-    VehicleSelector.tsx       ilha React: marca/modelo/ano + cadastrar
-  data/
-    vehicles.json             10+ veículos populares BR (inclui civic-2018)
-    faq.json                  perguntas FAQ
-  layouts/
-    BaseLayout.astro          shell HTML + tema + AdSense script
-  lib/
-    ads.ts                    config dos 3 slots
-    calc.ts                   funções puras de cálculo
-    seo.ts                    helpers schema.org
-    share.ts                  encode/decode query params
-    storage.ts                wrappers localStorage com namespace
-  pages/
-    404.astro
-    calculadora/[slug].astro  rota dinâmica por veículo
-    configuracoes.astro       slider 70%, tema, meu carro, limpar
-    index.astro               home calculadora genérica
-    sobre.astro
-  styles/
-    globals.css               Tailwind + tokens de cor
-public/
-  ads.txt                     mantido (já existe)
-  fonts/                      Inter self-hosted
-  robots.txt                  permissivo + sitemap link
-  favicons existentes mantidos
-tests/
-  calc.test.ts
-  share.test.ts
-  storage.test.ts
-.github/workflows/
-  deploy.yml                  build + lighthouse + deploy gh-pages
-astro.config.mjs
-tailwind.config.ts
-tsconfig.json
-vitest.config.ts
-package.json
-```
+**AdSense slots (publicador `ca-pub-4225671400356326`):**
+- after-hero: `9152601323` (Display)
+- in-article: `1798901087` (In-article)
+- footer: `2582311903` (Display, existente)
 
 ---
 
-## Task 1: Inicializar projeto Astro + Tailwind + TS
+## Estrutura de arquivos
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `astro.config.mjs` | Config Astro: site URL, integrations (sitemap), output static |
+| `tailwind.config.ts` | Tokens de cor, fontes, breakpoints |
+| `tsconfig.json` | TS estrito |
+| `package.json` | Deps e scripts |
+| `vitest.config.ts` | Config Vitest |
+| `src/styles/globals.css` | Tailwind base + variáveis CSS |
+| `src/lib/calc.ts` | Funções puras de cálculo |
+| `src/lib/storage.ts` | Wrappers localStorage namespaced |
+| `src/lib/share.ts` | Encode/decode query params para share |
+| `src/lib/seo.ts` | Helpers JSON-LD |
+| `src/lib/ads.ts` | Constantes dos slots AdSense |
+| `src/data/vehicles.json` | Catálogo de veículos |
+| `src/data/faq.json` | FAQ comum |
+| `src/components/SEO.astro` | Meta tags + JSON-LD por página |
+| `src/components/AdSlot.astro` | Wrapper AdSense |
+| `src/components/Header.astro` | Header sticky mobile |
+| `src/components/Footer.astro` | Footer com links |
+| `src/components/FuelCalculator.astro` | Form + lógica de UI |
+| `src/components/VehicleSelector.tsx` | Marca/modelo/ano + cadastro |
+| `src/components/ResultsCards.astro` | Resultado mobile-first |
+| `src/components/SavingsHighlight.astro` | Banner regra 70% |
+| `src/components/History.tsx` | Últimos 5 cálculos |
+| `src/components/TripCalculator.tsx` | Custo de viagem |
+| `src/components/ShareButton.tsx` | navigator.share + clipboard fallback |
+| `src/components/FAQ.astro` | FAQ visível casa com schema |
+| `src/layouts/Layout.astro` | HTML shell + AdSense script |
+| `src/pages/index.astro` | Home calculadora genérica |
+| `src/pages/calculadora/[slug].astro` | Página por veículo |
+| `src/pages/configuracoes.astro` | Settings |
+| `src/pages/sobre.astro` | Sobre |
+| `src/pages/404.astro` | 404 custom |
+| `public/ads.txt` | Mantido como está |
+| `public/robots.txt` | Permissivo + sitemap |
+| `tests/calc.test.ts` | Testes Vitest |
+| `.github/workflows/deploy.yml` | Build + deploy gh-pages |
+
+---
+
+## Task 1: Setup do projeto Astro
 
 **Files:**
-- Create: `package.json`, `astro.config.mjs`, `tsconfig.json`, `tailwind.config.ts`, `src/styles/globals.css`, `vitest.config.ts`, `.gitignore`
+- Create: `package.json`
+- Create: `tsconfig.json`
+- Create: `astro.config.mjs`
+- Create: `.gitignore`
+- Create: `src/pages/index.astro` (placeholder)
 
-- [ ] **Step 1: Mover arquivos legados para subpasta `legacy/`**
-
-```bash
-mkdir -p legacy
-git mv index.html legacy/index.html
-git mv code.txt legacy/code.txt
-```
-Manter na raiz: `ads.txt`, todos `favicon-*`, `apple-touch-icon-*`, `mstile-*`, `sitemap.xml` (será sobrescrito), `.git`, `.idea`, `.claude`, `docs/`.
-
-- [ ] **Step 2: Inicializar package.json**
+- [ ] **Step 1: Backup do index.html antigo**
 
 ```bash
-npm init -y
+git mv index.html legacy-index.html
+git commit -m "chore: archive legacy index.html before v2 rewrite"
 ```
-Editar `package.json`:
+
+- [ ] **Step 2: Inicializar Node project**
+
+Run: `npm init -y`
+
+- [ ] **Step 3: Criar package.json final**
+
 ```json
 {
   "name": "fuel-calc",
+  "version": "2.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build",
+    "start": "astro dev",
+    "build": "astro build",
     "preview": "astro preview",
     "test": "vitest run",
     "test:watch": "vitest"
+  },
+  "dependencies": {
+    "astro": "^5.0.0",
+    "@astrojs/react": "^4.0.0",
+    "@astrojs/sitemap": "^3.2.0",
+    "@astrojs/tailwind": "^5.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwindcss": "^3.4.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
   }
 }
 ```
 
-- [ ] **Step 3: Instalar dependências**
+- [ ] **Step 4: Instalar deps**
 
-```bash
-npm install astro@^5 @astrojs/react@^4 @astrojs/sitemap@^3 @astrojs/check typescript react react-dom
-npm install -D @types/react @types/react-dom tailwindcss@^4 @tailwindcss/vite vitest @vitest/coverage-v8
-```
-
-- [ ] **Step 4: Criar astro.config.mjs**
-
-```js
-import { defineConfig } from "astro/config";
-import react from "@astrojs/react";
-import sitemap from "@astrojs/sitemap";
-import tailwindcss from "@tailwindcss/vite";
-
-export default defineConfig({
-  site: "https://marciioluucas.github.io",
-  output: "static",
-  integrations: [react(), sitemap()],
-  vite: { plugins: [tailwindcss()] },
-  build: { inlineStylesheets: "auto" }
-});
-```
+Run: `npm install`
+Expected: sem erros, `node_modules` criado
 
 - [ ] **Step 5: Criar tsconfig.json**
 
 ```json
 {
   "extends": "astro/tsconfigs/strict",
-  "include": ["src/**/*", "tests/**/*"],
+  "include": ["src", "tests"],
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "react",
@@ -142,576 +131,694 @@ export default defineConfig({
 }
 ```
 
-- [ ] **Step 6: Criar src/styles/globals.css**
+- [ ] **Step 6: Criar astro.config.mjs**
 
-```css
-@import "tailwindcss";
+```js
+import { defineConfig } from 'astro/config';
+import tailwind from '@astrojs/tailwind';
+import react from '@astrojs/react';
+import sitemap from '@astrojs/sitemap';
 
-@theme {
-  --color-bg: #0B1220;
-  --color-surface: #131C2E;
-  --color-border: #1E293B;
-  --color-primary: #F59E0B;
-  --color-accent: #10B981;
-  --color-danger: #EF4444;
-  --color-text: #E5E7EB;
-  --color-muted: #94A3B8;
-  --font-sans: "Inter", system-ui, sans-serif;
-}
-
-html, body { background: var(--color-bg); color: var(--color-text); }
-html { font-family: var(--font-sans); }
-body { -webkit-text-size-adjust: 100%; }
-input { font-size: 16px; } /* iOS no zoom */
-```
-
-- [ ] **Step 7: Criar vitest.config.ts**
-
-```ts
-import { defineConfig } from "vitest/config";
 export default defineConfig({
-  test: { environment: "node", coverage: { include: ["src/lib/**"] } }
+  site: 'https://marciioluucas.github.io',
+  output: 'static',
+  integrations: [
+    tailwind({ applyBaseStyles: false }),
+    react(),
+    sitemap(),
+  ],
+  build: {
+    inlineStylesheets: 'auto',
+  },
 });
 ```
 
-- [ ] **Step 8: .gitignore**
+- [ ] **Step 7: Criar .gitignore**
 
 ```
 node_modules/
 dist/
 .astro/
-coverage/
-.DS_Store
 .env*
+.DS_Store
+coverage/
 ```
 
-- [ ] **Step 9: Validar build vazio**
+- [ ] **Step 8: Criar src/pages/index.astro placeholder**
 
-```bash
-mkdir -p src/pages
-echo '---' > src/pages/index.astro
-echo '---' >> src/pages/index.astro
-echo '<h1>ok</h1>' >> src/pages/index.astro
-npm run build
+```astro
+---
+---
+<html lang="pt-BR">
+  <head><meta charset="utf-8"><title>Fuel Calc v2</title></head>
+  <body><h1>Setup OK</h1></body>
+</html>
 ```
-Expected: build succeeds, `dist/index.html` exists.
+
+- [ ] **Step 9: Verificar build**
+
+Run: `npm run build`
+Expected: `dist/` criado, `dist/index.html` existe
 
 - [ ] **Step 10: Commit**
 
 ```bash
-git add -A
-git commit -m "chore: bootstrap astro 5 + tailwind 4 + ts"
+git add package.json package-lock.json tsconfig.json astro.config.mjs .gitignore src/
+git commit -m "chore: bootstrap astro project"
 ```
 
 ---
 
-## Task 2: Lógica de cálculo (TDD)
+## Task 2: Tailwind + design tokens
 
 **Files:**
-- Create: `src/lib/calc.ts`, `tests/calc.test.ts`
+- Create: `tailwind.config.ts`
+- Create: `src/styles/globals.css`
+- Create: `public/fonts/` (placeholder)
+- Modify: `src/pages/index.astro`
 
-- [ ] **Step 1: Escrever testes falhando**
-
-`tests/calc.test.ts`:
-```ts
-import { describe, it, expect } from "vitest";
-import {
-  custoPorKm, melhorCombustivel, economiaPorTanque,
-  regraSetenta, custoViagem, tanquesPorViagem
-} from "../src/lib/calc";
-
-describe("calc", () => {
-  it("custoPorKm divide preço por autonomia", () => {
-    expect(custoPorKm(4.9, 8.5)).toBeCloseTo(0.5765, 3);
-  });
-
-  it("melhorCombustivel escolhe o de menor custo/km", () => {
-    expect(melhorCombustivel(0.5, 0.6)).toBe("gasolina");
-    expect(melhorCombustivel(0.6, 0.5)).toBe("etanol");
-    expect(melhorCombustivel(0.5, 0.5)).toBe("gasolina");
-  });
-
-  it("regraSetenta calcula ratio e vale com limite default 0.7", () => {
-    const r = regraSetenta(3.43, 4.9);
-    expect(r.ratio).toBeCloseTo(0.7, 2);
-    expect(r.vale).toBe(true);
-    expect(regraSetenta(3.79, 4.9).vale).toBe(false); // 0.773
-  });
-
-  it("regraSetenta aceita limite customizado", () => {
-    expect(regraSetenta(3.79, 4.9, 0.78).vale).toBe(true);
-  });
-
-  it("economiaPorTanque calcula diferença em R$ pelo tanque", () => {
-    const e = economiaPorTanque({
-      precoG: 4.9, precoE: 3.43, autG: 8.5, autE: 5.4, tanque: 56
-    });
-    expect(e).toBeGreaterThan(0);
-  });
-
-  it("custoViagem multiplica km por custo/km", () => {
-    expect(custoViagem(100, 0.5)).toBe(50);
-  });
-
-  it("tanquesPorViagem retorna número fracionário", () => {
-    expect(tanquesPorViagem(1000, 10, 50)).toBe(2);
-  });
-});
-```
-
-- [ ] **Step 2: Rodar e ver falhar**
-
-```bash
-npm test
-```
-Expected: FAIL — module not found.
-
-- [ ] **Step 3: Implementar `src/lib/calc.ts`**
+- [ ] **Step 1: Criar tailwind.config.ts**
 
 ```ts
-export type Combustivel = "gasolina" | "etanol";
+import type { Config } from 'tailwindcss';
 
-export function custoPorKm(preco: number, autonomia: number): number {
-  if (autonomia <= 0) return Infinity;
-  return preco / autonomia;
-}
+export default {
+  content: ['./src/**/*.{astro,html,js,jsx,ts,tsx,md,mdx}'],
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        bg: '#0B1220',
+        surface: '#131C2E',
+        border: '#1E293B',
+        primary: '#F59E0B',
+        accent: '#10B981',
+        danger: '#EF4444',
+        text: '#E5E7EB',
+        muted: '#94A3B8',
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+    },
+  },
+} satisfies Config;
+```
 
-export function melhorCombustivel(custoG: number, custoE: number): Combustivel {
-  return custoG <= custoE ? "gasolina" : "etanol";
-}
+- [ ] **Step 2: Criar src/styles/globals.css**
 
-export function regraSetenta(precoE: number, precoG: number, limite = 0.7) {
-  const ratio = precoG > 0 ? precoE / precoG : Infinity;
-  return { ratio, vale: ratio <= limite };
-}
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-export function economiaPorTanque(p: {
-  precoG: number; precoE: number; autG: number; autE: number; tanque: number;
-}): number {
-  const cG = custoPorKm(p.precoG, p.autG);
-  const cE = custoPorKm(p.precoE, p.autE);
-  const winner = melhorCombustivel(cG, cE);
-  if (winner === "gasolina") {
-    const kmGas = p.autG * p.tanque;
-    return Math.max(0, (cE - cG) * kmGas);
+@layer base {
+  :root {
+    color-scheme: dark;
   }
-  const kmEt = p.autE * p.tanque;
-  return Math.max(0, (cG - cE) * kmEt);
+  html {
+    font-size: 16px;
+  }
+  body {
+    @apply bg-bg text-text font-sans antialiased;
+  }
+  input, button, select, textarea {
+    font: inherit;
+  }
 }
 
-export function custoViagem(km: number, custoKm: number): number {
-  return km * custoKm;
-}
-
-export function tanquesPorViagem(km: number, autonomia: number, tanque: number): number {
-  if (autonomia <= 0 || tanque <= 0) return Infinity;
-  return km / (autonomia * tanque);
+@layer utilities {
+  .container-app {
+    @apply mx-auto w-full max-w-2xl px-4;
+  }
 }
 ```
 
-- [ ] **Step 4: Rodar e ver passar**
+- [ ] **Step 3: Atualizar src/pages/index.astro pra usar globals**
 
-```bash
-npm test
+```astro
+---
+import '../styles/globals.css';
+---
+<html lang="pt-BR" class="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Calculadora de Combustível</title>
+  </head>
+  <body>
+    <main class="container-app py-8">
+      <h1 class="text-3xl font-bold text-primary">Tailwind OK</h1>
+      <p class="text-muted mt-2">Mobile-first base ativa.</p>
+    </main>
+  </body>
+</html>
 ```
-Expected: PASS — 7/7.
+
+- [ ] **Step 4: Build e verificar visualmente**
+
+Run: `npm run dev`
+Verificar em http://localhost:4321 — fundo escuro, título amber, mobile responsivo
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/lib/calc.ts tests/calc.test.ts
-git commit -m "feat(calc): add pure fuel calculation lib with tests"
+git add tailwind.config.ts src/styles/ src/pages/index.astro
+git commit -m "feat: tailwind tokens and base styles"
 ```
 
 ---
 
-## Task 3: Storage e Share (TDD)
+## Task 3: Lógica de cálculo (TDD)
 
 **Files:**
-- Create: `src/lib/storage.ts`, `src/lib/share.ts`, `tests/storage.test.ts`, `tests/share.test.ts`
+- Create: `vitest.config.ts`
+- Create: `src/lib/calc.ts`
+- Create: `tests/calc.test.ts`
 
-- [ ] **Step 1: Testes storage**
+- [ ] **Step 1: Criar vitest.config.ts**
 
-`tests/storage.test.ts`:
 ```ts
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { getItem, setItem, removeItem, NS } from "../src/lib/storage";
+import { defineConfig } from 'vitest/config';
 
-beforeEach(() => {
-  const store: Record<string, string> = {};
-  vi.stubGlobal("localStorage", {
-    getItem: (k: string) => store[k] ?? null,
-    setItem: (k: string, v: string) => { store[k] = v; },
-    removeItem: (k: string) => { delete store[k]; }
+export default defineConfig({
+  test: {
+    environment: 'node',
+    include: ['tests/**/*.test.ts'],
+  },
+});
+```
+
+- [ ] **Step 2: Escrever testes (failing)**
+
+Create `tests/calc.test.ts`:
+
+```ts
+import { describe, it, expect } from 'vitest';
+import {
+  custoPorKm,
+  melhorCombustivel,
+  economiaPorTanque,
+  regraSetenta,
+  custoViagem,
+  tanquesPorViagem,
+} from '../src/lib/calc';
+
+describe('custoPorKm', () => {
+  it('divide preço pela autonomia', () => {
+    expect(custoPorKm(4.9, 10)).toBeCloseTo(0.49);
+  });
+  it('lança erro com autonomia zero', () => {
+    expect(() => custoPorKm(4.9, 0)).toThrow();
   });
 });
 
-describe("storage", () => {
-  it("setItem grava com namespace", () => {
-    setItem("settings", { regra70: 0.7 });
-    expect(localStorage.getItem(`${NS}:settings`)).toBe('{"regra70":0.7}');
+describe('melhorCombustivel', () => {
+  it('escolhe gasolina quando custo é menor', () => {
+    expect(melhorCombustivel(0.5, 0.6)).toBe('gasolina');
   });
-
-  it("getItem retorna parsed ou default", () => {
-    expect(getItem("missing", { x: 1 })).toEqual({ x: 1 });
-    setItem("foo", { y: 2 });
-    expect(getItem("foo", null)).toEqual({ y: 2 });
+  it('escolhe etanol quando custo é menor', () => {
+    expect(melhorCombustivel(0.6, 0.5)).toBe('etanol');
   });
+  it('empate fica com gasolina por convenção', () => {
+    expect(melhorCombustivel(0.5, 0.5)).toBe('gasolina');
+  });
+});
 
-  it("removeItem apaga", () => {
-    setItem("x", 1);
-    removeItem("x");
-    expect(getItem("x", null)).toBeNull();
+describe('economiaPorTanque', () => {
+  it('calcula economia em R$ usando o tanque do vencedor', () => {
+    const r = economiaPorTanque({
+      precoGasolina: 4.9, autonomiaGasolina: 10,
+      precoEtanol: 3.79, autonomiaEtanol: 7,
+      tanque: 56,
+    });
+    expect(r.vencedor).toBe('gasolina');
+    expect(r.economiaRs).toBeGreaterThan(0);
+  });
+});
+
+describe('regraSetenta', () => {
+  it('vale quando ratio <= limite', () => {
+    const r = regraSetenta(3.43, 4.9, 0.7);
+    expect(r.ratio).toBeCloseTo(0.7);
+    expect(r.vale).toBe(true);
+  });
+  it('não vale acima do limite', () => {
+    const r = regraSetenta(3.6, 4.9, 0.7);
+    expect(r.vale).toBe(false);
+  });
+});
+
+describe('custoViagem', () => {
+  it('multiplica km por custo/km', () => {
+    expect(custoViagem(100, 0.49)).toBeCloseTo(49);
+  });
+});
+
+describe('tanquesPorViagem', () => {
+  it('arredonda para cima', () => {
+    expect(tanquesPorViagem(1000, 10, 56)).toBe(2);
   });
 });
 ```
 
-- [ ] **Step 2: Testes share**
+- [ ] **Step 3: Rodar testes — devem falhar**
 
-`tests/share.test.ts`:
+Run: `npm test`
+Expected: FAIL — módulo não existe
+
+- [ ] **Step 4: Implementar src/lib/calc.ts**
+
 ```ts
-import { describe, it, expect } from "vitest";
-import { encodeShare, decodeShare } from "../src/lib/share";
+export type Combustivel = 'gasolina' | 'etanol';
 
-describe("share", () => {
-  it("encode produz query params", () => {
-    expect(encodeShare({ v: "civic-2018", g: 4.9, e: 3.79 }))
-      .toBe("?v=civic-2018&g=4.9&e=3.79");
-  });
+export function custoPorKm(preco: number, autonomia: number): number {
+  if (autonomia <= 0) throw new Error('autonomia deve ser > 0');
+  return preco / autonomia;
+}
 
-  it("decode lê params", () => {
-    const r = decodeShare("?v=gol&g=5.10&e=3.50");
-    expect(r).toEqual({ v: "gol", g: 5.1, e: 3.5 });
-  });
+export function melhorCombustivel(
+  custoGasolina: number,
+  custoEtanol: number
+): Combustivel {
+  return custoGasolina <= custoEtanol ? 'gasolina' : 'etanol';
+}
 
-  it("decode tolera ausências", () => {
-    expect(decodeShare("?v=civic-2018")).toEqual({ v: "civic-2018" });
-  });
-});
+export type EconomiaInput = {
+  precoGasolina: number;
+  autonomiaGasolina: number;
+  precoEtanol: number;
+  autonomiaEtanol: number;
+  tanque: number;
+};
+
+export type EconomiaResult = {
+  vencedor: Combustivel;
+  custoGasolinaKm: number;
+  custoEtanolKm: number;
+  autonomiaTanqueGasolina: number;
+  autonomiaTanqueEtanol: number;
+  economiaRs: number;
+};
+
+export function economiaPorTanque(i: EconomiaInput): EconomiaResult {
+  const cg = custoPorKm(i.precoGasolina, i.autonomiaGasolina);
+  const ce = custoPorKm(i.precoEtanol, i.autonomiaEtanol);
+  const vencedor = melhorCombustivel(cg, ce);
+  const autoGas = i.autonomiaGasolina * i.tanque;
+  const autoEta = i.autonomiaEtanol * i.tanque;
+  const economiaRs = vencedor === 'gasolina'
+    ? (ce - cg) * autoGas
+    : (cg - ce) * autoEta;
+  return {
+    vencedor,
+    custoGasolinaKm: cg,
+    custoEtanolKm: ce,
+    autonomiaTanqueGasolina: autoGas,
+    autonomiaTanqueEtanol: autoEta,
+    economiaRs: Math.max(0, economiaRs),
+  };
+}
+
+export function regraSetenta(
+  precoEtanol: number,
+  precoGasolina: number,
+  limite = 0.7
+): { ratio: number; vale: boolean } {
+  if (precoGasolina <= 0) throw new Error('preço gasolina deve ser > 0');
+  const ratio = precoEtanol / precoGasolina;
+  return { ratio, vale: ratio <= limite };
+}
+
+export function custoViagem(km: number, custoPorKm: number): number {
+  return km * custoPorKm;
+}
+
+export function tanquesPorViagem(
+  km: number,
+  autonomia: number,
+  tanque: number
+): number {
+  if (autonomia <= 0 || tanque <= 0) throw new Error('valores devem ser > 0');
+  return Math.ceil(km / (autonomia * tanque));
+}
 ```
 
-- [ ] **Step 3: Rodar e ver falhar**
+- [ ] **Step 5: Rodar testes — devem passar**
+
+Run: `npm test`
+Expected: PASS — 9+ testes verdes
+
+- [ ] **Step 6: Commit**
 
 ```bash
-npm test
-```
-Expected: FAIL — modules missing.
-
-- [ ] **Step 4: Implementar `src/lib/storage.ts`**
-
-```ts
-export const NS = "fuelcalc";
-
-export function getItem<T>(key: string, fallback: T): T {
-  if (typeof localStorage === "undefined") return fallback;
-  const raw = localStorage.getItem(`${NS}:${key}`);
-  if (raw === null) return fallback;
-  try { return JSON.parse(raw) as T; } catch { return fallback; }
-}
-
-export function setItem(key: string, value: unknown): void {
-  if (typeof localStorage === "undefined") return;
-  localStorage.setItem(`${NS}:${key}`, JSON.stringify(value));
-}
-
-export function removeItem(key: string): void {
-  if (typeof localStorage === "undefined") return;
-  localStorage.removeItem(`${NS}:${key}`);
-}
+git add src/lib/calc.ts tests/calc.test.ts vitest.config.ts
+git commit -m "feat: pure calculation module with vitest coverage"
 ```
 
-- [ ] **Step 5: Implementar `src/lib/share.ts`**
+---
+
+## Task 4: Storage + Share + Ads helpers
+
+**Files:**
+- Create: `src/lib/storage.ts`
+- Create: `src/lib/share.ts`
+- Create: `src/lib/ads.ts`
+
+- [ ] **Step 1: Criar src/lib/storage.ts**
 
 ```ts
-export type ShareParams = { v?: string; g?: number; e?: number };
+const NS = 'fuelcalc:';
+
+export type StoredVehicle = {
+  slug: string;
+  marca: string;
+  modelo: string;
+  ano: number;
+  tanque: number;
+  autonomia: {
+    gasolina: { cidade: number; estrada: number };
+    etanol: { cidade: number; estrada: number };
+  };
+};
+
+export type Settings = {
+  regra70: number;
+  theme: 'dark' | 'light';
+};
+
+export type CalcHistoryEntry = {
+  ts: number;
+  vehicleSlug: string;
+  prices: { gasolina: number; etanol: number };
+  vencedorCidade: 'gasolina' | 'etanol';
+  vencedorEstrada: 'gasolina' | 'etanol';
+};
+
+const isBrowser = () => typeof window !== 'undefined';
+
+function get<T>(key: string, fallback: T): T {
+  if (!isBrowser()) return fallback;
+  try {
+    const v = localStorage.getItem(NS + key);
+    return v ? (JSON.parse(v) as T) : fallback;
+  } catch { return fallback; }
+}
+
+function set<T>(key: string, value: T): void {
+  if (!isBrowser()) return;
+  try { localStorage.setItem(NS + key, JSON.stringify(value)); } catch {}
+}
+
+function remove(key: string): void {
+  if (!isBrowser()) return;
+  try { localStorage.removeItem(NS + key); } catch {}
+}
+
+export const storage = {
+  getUserVehicle: (): StoredVehicle | null => get('user-vehicle', null),
+  setUserVehicle: (v: StoredVehicle) => set('user-vehicle', v),
+  clearUserVehicle: () => remove('user-vehicle'),
+
+  getSettings: (): Settings => get('settings', { regra70: 0.7, theme: 'dark' }),
+  setSettings: (s: Settings) => set('settings', s),
+
+  getHistory: (): CalcHistoryEntry[] => get('history', []),
+  pushHistory: (e: CalcHistoryEntry) => {
+    const arr = get<CalcHistoryEntry[]>('history', []);
+    arr.unshift(e);
+    set('history', arr.slice(0, 5));
+  },
+  clearHistory: () => remove('history'),
+
+  getLastPrices: () => get('last-prices', { gasolina: 0, etanol: 0 }),
+  setLastPrices: (p: { gasolina: number; etanol: number }) =>
+    set('last-prices', p),
+};
+```
+
+- [ ] **Step 2: Criar src/lib/share.ts**
+
+```ts
+export type ShareParams = {
+  v?: string; // vehicle slug
+  g?: number; // preço gasolina
+  e?: number; // preço etanol
+};
 
 export function encodeShare(p: ShareParams): string {
-  const parts: string[] = [];
-  if (p.v) parts.push(`v=${encodeURIComponent(p.v)}`);
-  if (p.g !== undefined) parts.push(`g=${p.g}`);
-  if (p.e !== undefined) parts.push(`e=${p.e}`);
-  return parts.length ? `?${parts.join("&")}` : "";
+  const u = new URLSearchParams();
+  if (p.v) u.set('v', p.v);
+  if (p.g != null) u.set('g', p.g.toFixed(2));
+  if (p.e != null) u.set('e', p.e.toFixed(2));
+  return u.toString();
 }
 
-export function decodeShare(qs: string): ShareParams {
-  const u = new URLSearchParams(qs.startsWith("?") ? qs.slice(1) : qs);
+export function decodeShare(search: string): ShareParams {
+  const u = new URLSearchParams(search);
   const out: ShareParams = {};
-  const v = u.get("v"); if (v) out.v = v;
-  const g = u.get("g"); if (g !== null) out.g = parseFloat(g);
-  const e = u.get("e"); if (e !== null) out.e = parseFloat(e);
+  const v = u.get('v'); if (v) out.v = v;
+  const g = u.get('g'); if (g) out.g = parseFloat(g);
+  const e = u.get('e'); if (e) out.e = parseFloat(e);
   return out;
 }
 ```
 
-- [ ] **Step 6: Rodar e ver passar**
-
-```bash
-npm test
-```
-Expected: PASS — todos.
-
-- [ ] **Step 7: Commit**
-
-```bash
-git add src/lib/storage.ts src/lib/share.ts tests/
-git commit -m "feat(lib): storage and share helpers with tests"
-```
-
----
-
-## Task 4: Dados de veículos + FAQ
-
-**Files:**
-- Create: `src/data/vehicles.json`, `src/data/faq.json`, `src/lib/vehicles.ts`
-
-- [ ] **Step 1: Criar `src/data/vehicles.json`**
-
-```json
-[
-  { "slug": "civic-2018", "marca": "Honda", "modelo": "Civic EXL", "ano": 2018, "tanque": 56,
-    "autonomia": { "gasolina": { "cidade": 8.5, "estrada": 14.07 },
-                   "etanol":   { "cidade": 5.4, "estrada": 10.7 } } },
-  { "slug": "gol-1-0-2020", "marca": "Volkswagen", "modelo": "Gol 1.0", "ano": 2020, "tanque": 55,
-    "autonomia": { "gasolina": { "cidade": 11.0, "estrada": 14.5 },
-                   "etanol":   { "cidade": 7.6, "estrada": 10.2 } } },
-  { "slug": "hb20-1-0-2022", "marca": "Hyundai", "modelo": "HB20 1.0", "ano": 2022, "tanque": 50,
-    "autonomia": { "gasolina": { "cidade": 11.7, "estrada": 14.9 },
-                   "etanol":   { "cidade": 8.0, "estrada": 10.4 } } },
-  { "slug": "onix-1-0-2023", "marca": "Chevrolet", "modelo": "Onix 1.0", "ano": 2023, "tanque": 44,
-    "autonomia": { "gasolina": { "cidade": 11.5, "estrada": 14.8 },
-                   "etanol":   { "cidade": 7.9, "estrada": 10.2 } } },
-  { "slug": "corolla-xei-2022", "marca": "Toyota", "modelo": "Corolla XEi", "ano": 2022, "tanque": 50,
-    "autonomia": { "gasolina": { "cidade": 9.8, "estrada": 13.2 },
-                   "etanol":   { "cidade": 6.8, "estrada": 9.2 } } },
-  { "slug": "compass-2021", "marca": "Jeep", "modelo": "Compass Sport", "ano": 2021, "tanque": 60,
-    "autonomia": { "gasolina": { "cidade": 7.8, "estrada": 11.2 },
-                   "etanol":   { "cidade": 5.4, "estrada": 7.8 } } },
-  { "slug": "renegade-2022", "marca": "Jeep", "modelo": "Renegade", "ano": 2022, "tanque": 48,
-    "autonomia": { "gasolina": { "cidade": 8.5, "estrada": 11.5 },
-                   "etanol":   { "cidade": 5.9, "estrada": 8.0 } } },
-  { "slug": "polo-1-0-2023", "marca": "Volkswagen", "modelo": "Polo 1.0", "ano": 2023, "tanque": 52,
-    "autonomia": { "gasolina": { "cidade": 11.4, "estrada": 14.7 },
-                   "etanol":   { "cidade": 7.8, "estrada": 10.1 } } },
-  { "slug": "tcross-2022", "marca": "Volkswagen", "modelo": "T-Cross", "ano": 2022, "tanque": 52,
-    "autonomia": { "gasolina": { "cidade": 9.5, "estrada": 12.8 },
-                   "etanol":   { "cidade": 6.6, "estrada": 8.9 } } },
-  { "slug": "strada-2022", "marca": "Fiat", "modelo": "Strada 1.4", "ano": 2022, "tanque": 55,
-    "autonomia": { "gasolina": { "cidade": 9.8, "estrada": 13.0 },
-                   "etanol":   { "cidade": 6.8, "estrada": 9.0 } } }
-]
-```
-
-- [ ] **Step 2: Criar `src/data/faq.json`**
-
-```json
-[
-  { "q": "Etanol ou gasolina: qual compensa mais?",
-    "a": "Compensa o etanol quando seu preço por litro for menor ou igual a 70% do preço da gasolina. Como o etanol rende menos por litro, esse limite compensa a diferença de eficiência. Use a calculadora acima com os preços do dia para ter certeza." },
-  { "q": "Como descobrir o consumo real do meu carro?",
-    "a": "Encha o tanque, anote o quilômetro do hodômetro, rode até esvaziar mais ou menos metade, encha de novo e divida os km rodados pelos litros do segundo abastecimento. Faça isso separado em cidade e estrada para ter números mais precisos." },
-  { "q": "Por que a regra dos 70% não é exata?",
-    "a": "A regra é uma média. Cada motor tem eficiência diferente entre os dois combustíveis. Carros mais antigos podem ter limite de 65%, alguns flex modernos chegam a 75%. Por isso a calculadora deixa o limite ajustável." },
-  { "q": "Posso misturar etanol e gasolina no mesmo tanque?",
-    "a": "Sim, todo carro flex aceita mistura em qualquer proporção. Os cálculos da calculadora consideram tanque cheio de um único combustível, mas na prática você pode abastecer parcial sem problema." },
-  { "q": "A calculadora salva meus dados?",
-    "a": "Os dados ficam apenas no seu navegador (localStorage). Nenhuma informação vai para servidor. Você pode limpar tudo na tela de Configurações." },
-  { "q": "Funciona offline?",
-    "a": "Depois da primeira visita, a página fica em cache do navegador e o cálculo roda 100% no seu dispositivo, sem precisar de internet." },
-  { "q": "O preço médio do etanol e da gasolina hoje no Brasil?",
-    "a": "Varia muito por região. A ANP publica médias semanais em gov.br/anp. A calculadora usa os preços que você informa para dar o resultado mais preciso possível." }
-]
-```
-
-- [ ] **Step 3: Helper `src/lib/vehicles.ts`**
+- [ ] **Step 3: Criar src/lib/ads.ts**
 
 ```ts
-import data from "../data/vehicles.json";
+export const ADSENSE_CLIENT = 'ca-pub-4225671400356326';
 
-export type Vehicle = {
-  slug: string; marca: string; modelo: string; ano: number; tanque: number;
-  autonomia: {
-    gasolina: { cidade: number; estrada: number };
-    etanol:   { cidade: number; estrada: number };
-  };
-};
-
-export const vehicles: Vehicle[] = data as Vehicle[];
-
-export function getVehicle(slug: string): Vehicle | undefined {
-  return vehicles.find(v => v.slug === slug);
-}
-
-export const DEFAULT_SLUG = "civic-2018";
+export const AD_SLOTS = {
+  afterHero: '9152601323',
+  inArticle: '1798901087',
+  footer: '2582311903',
+} as const;
 ```
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/data src/lib/vehicles.ts
-git commit -m "feat(data): add vehicles dataset and faq content"
+git add src/lib/storage.ts src/lib/share.ts src/lib/ads.ts
+git commit -m "feat: storage, share and ads helpers"
 ```
 
 ---
 
-## Task 5: Layout base + Header/Footer + globals
+## Task 5: Vehicles dataset + FAQ
 
 **Files:**
-- Create: `src/layouts/BaseLayout.astro`, `src/components/Header.astro`, `src/components/Footer.astro`
+- Create: `src/data/vehicles.json`
+- Create: `src/data/faq.json`
+- Create: `src/lib/vehicles.ts`
 
-- [ ] **Step 1: Criar `src/components/Header.astro`**
+- [ ] **Step 1: Criar src/data/vehicles.json**
 
-```astro
----
----
-<header class="sticky top-0 z-30 h-14 bg-[var(--color-surface)]/95 backdrop-blur border-b border-[var(--color-border)] flex items-center px-4">
-  <a href="/" class="text-base font-semibold text-[var(--color-primary)]">
-    ⛽ Calculadora de Combustível
-  </a>
-  <nav class="ml-auto flex gap-4 text-sm text-[var(--color-muted)]">
-    <a href="/configuracoes" aria-label="Configurações" class="hover:text-[var(--color-text)]">⚙️</a>
-  </nav>
-</header>
-```
-
-- [ ] **Step 2: Criar `src/components/Footer.astro`**
-
-```astro
----
----
-<footer class="mt-16 border-t border-[var(--color-border)] py-8 px-4 text-center text-sm text-[var(--color-muted)]">
-  <nav class="mb-4 flex justify-center gap-4 flex-wrap">
-    <a href="/" class="hover:text-[var(--color-text)]">Início</a>
-    <a href="/calculadora/civic-2018" class="hover:text-[var(--color-text)]">Civic 2018</a>
-    <a href="/configuracoes" class="hover:text-[var(--color-text)]">Configurações</a>
-    <a href="/sobre" class="hover:text-[var(--color-text)]">Sobre</a>
-  </nav>
-  <p>
-    Feito com <span class="text-[var(--color-danger)]">♥</span> por
-    <a class="underline" href="https://www.linkedin.com/in/marcio-lucas/">Márcio Lucas</a>
-  </p>
-</footer>
-```
-
-- [ ] **Step 3: Criar `src/layouts/BaseLayout.astro`**
-
-```astro
----
-import "@/styles/globals.css";
-import Header from "@/components/Header.astro";
-import Footer from "@/components/Footer.astro";
-import SEO from "@/components/SEO.astro";
-
-interface Props {
-  title: string;
-  description: string;
-  canonical?: string;
-  ogImage?: string;
-  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+```json
+{
+  "civic-2018": {
+    "slug": "civic-2018",
+    "marca": "Honda",
+    "modelo": "Civic EXL",
+    "ano": 2018,
+    "tanque": 56,
+    "autonomia": {
+      "gasolina": { "cidade": 8.5, "estrada": 14.07 },
+      "etanol":   { "cidade": 5.4, "estrada": 10.7 }
+    }
+  },
+  "gol-1.0-2020": {
+    "slug": "gol-1.0-2020",
+    "marca": "Volkswagen",
+    "modelo": "Gol 1.0",
+    "ano": 2020,
+    "tanque": 55,
+    "autonomia": {
+      "gasolina": { "cidade": 11.5, "estrada": 14.0 },
+      "etanol":   { "cidade": 7.8, "estrada": 9.6 }
+    }
+  },
+  "hb20-1.0-2022": {
+    "slug": "hb20-1.0-2022",
+    "marca": "Hyundai",
+    "modelo": "HB20 1.0",
+    "ano": 2022,
+    "tanque": 50,
+    "autonomia": {
+      "gasolina": { "cidade": 11.8, "estrada": 14.4 },
+      "etanol":   { "cidade": 8.2, "estrada": 9.9 }
+    }
+  },
+  "onix-1.0-2023": {
+    "slug": "onix-1.0-2023",
+    "marca": "Chevrolet",
+    "modelo": "Onix 1.0",
+    "ano": 2023,
+    "tanque": 44,
+    "autonomia": {
+      "gasolina": { "cidade": 11.3, "estrada": 14.6 },
+      "etanol":   { "cidade": 7.9, "estrada": 10.1 }
+    }
+  },
+  "corolla-xei-2022": {
+    "slug": "corolla-xei-2022",
+    "marca": "Toyota",
+    "modelo": "Corolla XEi",
+    "ano": 2022,
+    "tanque": 60,
+    "autonomia": {
+      "gasolina": { "cidade": 9.8, "estrada": 13.5 },
+      "etanol":   { "cidade": 6.7, "estrada": 9.3 }
+    }
+  },
+  "compass-2021": {
+    "slug": "compass-2021",
+    "marca": "Jeep",
+    "modelo": "Compass",
+    "ano": 2021,
+    "tanque": 60,
+    "autonomia": {
+      "gasolina": { "cidade": 7.8, "estrada": 11.5 },
+      "etanol":   { "cidade": 5.5, "estrada": 8.1 }
+    }
+  },
+  "renegade-2020": {
+    "slug": "renegade-2020",
+    "marca": "Jeep",
+    "modelo": "Renegade",
+    "ano": 2020,
+    "tanque": 48,
+    "autonomia": {
+      "gasolina": { "cidade": 8.6, "estrada": 12.2 },
+      "etanol":   { "cidade": 5.9, "estrada": 8.5 }
+    }
+  },
+  "polo-2022": {
+    "slug": "polo-2022",
+    "marca": "Volkswagen",
+    "modelo": "Polo",
+    "ano": 2022,
+    "tanque": 52,
+    "autonomia": {
+      "gasolina": { "cidade": 10.9, "estrada": 13.8 },
+      "etanol":   { "cidade": 7.5, "estrada": 9.5 }
+    }
+  },
+  "t-cross-2022": {
+    "slug": "t-cross-2022",
+    "marca": "Volkswagen",
+    "modelo": "T-Cross",
+    "ano": 2022,
+    "tanque": 52,
+    "autonomia": {
+      "gasolina": { "cidade": 9.4, "estrada": 12.7 },
+      "etanol":   { "cidade": 6.5, "estrada": 8.8 }
+    }
+  },
+  "strada-2023": {
+    "slug": "strada-2023",
+    "marca": "Fiat",
+    "modelo": "Strada",
+    "ano": 2023,
+    "tanque": 55,
+    "autonomia": {
+      "gasolina": { "cidade": 10.1, "estrada": 13.6 },
+      "etanol":   { "cidade": 7.0, "estrada": 9.4 }
+    }
+  }
 }
-const { title, description, canonical, ogImage, jsonLd } = Astro.props;
----
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <link rel="icon" type="image/png" href="/favicon-32x32.png" />
-    <SEO title={title} description={description} canonical={canonical} ogImage={ogImage} jsonLd={jsonLd} />
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4225671400356326" crossorigin="anonymous"></script>
-  </head>
-  <body class="min-h-screen flex flex-col">
-    <Header />
-    <main class="flex-1 max-w-2xl w-full mx-auto px-4 pt-4 pb-12">
-      <slot />
-    </main>
-    <Footer />
-  </body>
-</html>
 ```
 
-- [ ] **Step 4: Commit (SEO ainda placeholder, criado na Task 6)**
-
-Anota aqui — o componente SEO ainda não existe; faremos referência circular resolvida na próxima task. Não commitar ainda.
-
-```bash
-echo "skip commit; depende da Task 6"
-```
-
----
-
-## Task 6: SEO component + JSON-LD helpers
-
-**Files:**
-- Create: `src/components/SEO.astro`, `src/lib/seo.ts`
-
-- [ ] **Step 1: Criar `src/lib/seo.ts`**
+- [ ] **Step 2: Criar src/lib/vehicles.ts**
 
 ```ts
-export const SITE_URL = "https://marciioluucas.github.io";
+import vehiclesJson from '../data/vehicles.json';
+import type { StoredVehicle } from './storage';
 
-export function webApplicationLd() {
-  return {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    name: "Calculadora de Combustível",
-    url: SITE_URL,
-    applicationCategory: "UtilityApplication",
-    operatingSystem: "Any",
-    offers: { "@type": "Offer", price: "0", priceCurrency: "BRL" },
-    inLanguage: "pt-BR"
-  };
+export type Vehicle = StoredVehicle;
+
+export const vehicles: Record<string, Vehicle> = vehiclesJson as Record<string, Vehicle>;
+
+export const DEFAULT_SLUG = 'civic-2018';
+
+export function getVehicle(slug: string): Vehicle | undefined {
+  return vehicles[slug];
 }
 
-export function faqLd(items: { q: string; a: string }[]) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: items.map(i => ({
-      "@type": "Question",
-      name: i.q,
-      acceptedAnswer: { "@type": "Answer", text: i.a }
-    }))
-  };
+export function listVehicles(): Vehicle[] {
+  return Object.values(vehicles);
 }
 
-export function vehicleLd(v: { marca: string; modelo: string; ano: number }) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "Vehicle",
-    brand: v.marca,
-    model: v.modelo,
-    productionDate: String(v.ano),
-    fuelType: ["Gasoline", "Ethanol"]
-  };
-}
-
-export function breadcrumbLd(items: { name: string; url: string }[]) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: items.map((it, i) => ({
-      "@type": "ListItem", position: i + 1, name: it.name, item: it.url
-    }))
-  };
+export function vehicleTitle(v: Vehicle): string {
+  return `${v.marca} ${v.modelo} ${v.ano}`;
 }
 ```
 
-- [ ] **Step 2: Criar `src/components/SEO.astro`**
+- [ ] **Step 3: Criar src/data/faq.json**
+
+```json
+[
+  {
+    "q": "Etanol ou gasolina: qual compensa mais?",
+    "a": "Depende do preço relativo. A regra prática: se o etanol custa até 70% do preço da gasolina, ele compensa. Acima disso, a gasolina rende mais por real gasto. Mas o ideal é calcular com a autonomia real do seu carro."
+  },
+  {
+    "q": "Como funciona a regra dos 70%?",
+    "a": "Etanol tem cerca de 70% da eficiência energética da gasolina. Se ele estiver custando 70% ou menos do preço da gasolina, vale abastecer com etanol. Você pode ajustar esse limite em Configurações conforme seu carro."
+  },
+  {
+    "q": "Como descubro a autonomia real do meu carro?",
+    "a": "Ao abastecer, zere o hodômetro parcial. No próximo abastecimento, divida os km rodados pelos litros que entraram. Faça isso 3-4 vezes em condições parecidas (cidade ou estrada) e tire a média."
+  },
+  {
+    "q": "Por que separar cidade e estrada?",
+    "a": "Carros consomem diferente em cada situação. Cidade tem paradas, semáforos e baixa velocidade — consumo maior. Estrada tem velocidade constante — consumo menor. Calcular separado dá resultado mais preciso."
+  },
+  {
+    "q": "Os preços salvos ficam onde?",
+    "a": "Apenas no seu navegador (localStorage). Nada é enviado para servidores. Você pode limpar tudo em Configurações."
+  },
+  {
+    "q": "Funciona para carros flex apenas?",
+    "a": "Sim, a calculadora foi desenhada pra carros flex. Para carros 100% gasolina ou diesel, a comparação não se aplica."
+  }
+]
+```
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add src/data/ src/lib/vehicles.ts
+git commit -m "feat: vehicles dataset and faq content"
+```
+
+---
+
+## Task 6: Layout base + Header + Footer + AdSense script
+
+**Files:**
+- Create: `src/layouts/Layout.astro`
+- Create: `src/components/Header.astro`
+- Create: `src/components/Footer.astro`
+- Create: `src/components/AdSlot.astro`
+- Create: `src/components/SEO.astro`
+- Modify: `src/pages/index.astro`
+
+- [ ] **Step 1: Criar src/components/SEO.astro**
 
 ```astro
 ---
-import { SITE_URL } from "@/lib/seo";
 interface Props {
   title: string;
   description: string;
   canonical?: string;
   ogImage?: string;
-  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  jsonLd?: object | object[];
 }
 const { title, description, canonical, ogImage, jsonLd } = Astro.props;
-const url = canonical ?? new URL(Astro.url.pathname, SITE_URL).toString();
-const img = ogImage ?? `${SITE_URL}/og-default.png`;
-const lds = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+const url = canonical ?? Astro.url.href;
+const image = ogImage ?? new URL('/og-default.png', Astro.site).toString();
+const ldArray = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 ---
 <title>{title}</title>
 <meta name="description" content={description} />
@@ -720,813 +827,629 @@ const lds = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={url} />
-<meta property="og:image" content={img} />
+<meta property="og:image" content={image} />
 <meta property="og:locale" content="pt_BR" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={description} />
-<meta name="twitter:image" content={img} />
-<meta name="google-site-verification" content="NI15yYcV7aazijfGjnII6_hFABeltcJscdj_UhcsP_Q" />
-{lds.map(ld => <script type="application/ld+json" set:html={JSON.stringify(ld)} />)}
+<meta name="twitter:image" content={image} />
+{ldArray.map((ld) => (
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+))}
 ```
 
-- [ ] **Step 3: Commit (junto com Task 5)**
-
-```bash
-git add src/layouts src/components/Header.astro src/components/Footer.astro src/components/SEO.astro src/lib/seo.ts
-git commit -m "feat: base layout, header, footer, SEO component"
-```
-
----
-
-## Task 7: AdSlot component
-
-**Files:**
-- Create: `src/components/AdSlot.astro`, `src/lib/ads.ts`
-
-- [ ] **Step 1: Criar `src/lib/ads.ts`**
-
-```ts
-export const AD_CLIENT = "ca-pub-4225671400356326";
-
-export const AD_SLOTS = {
-  topo:    "0000000001", // TODO: substituir pelo ID real após criar no AdSense
-  inline:  "0000000002", // TODO: substituir
-  rodape:  "2582311903"  // existente
-} as const;
-
-export type AdSlotName = keyof typeof AD_SLOTS;
-```
-
-> Nota: criar slots no AdSense conforme spec §11.1; substituir `0000000001` e `0000000002` pelos IDs reais antes do deploy de produção. Em dev o componente nem chama o AdSense.
-
-- [ ] **Step 2: Criar `src/components/AdSlot.astro`**
+- [ ] **Step 2: Criar src/components/AdSlot.astro**
 
 ```astro
 ---
-import { AD_CLIENT, AD_SLOTS, type AdSlotName } from "@/lib/ads";
-interface Props { name: AdSlotName; format?: string; }
-const { name, format = "auto" } = Astro.props;
-const slot = AD_SLOTS[name];
-const isDev = import.meta.env.DEV;
+import { ADSENSE_CLIENT } from '../lib/ads';
+interface Props {
+  slot: string;
+  format?: string;
+  layout?: string;
+  responsive?: boolean;
+  testMode?: boolean;
+}
+const { slot, format = 'auto', layout, responsive = true, testMode = import.meta.env.DEV } = Astro.props;
 ---
-{isDev ? (
-  <div class="my-6 p-4 border border-dashed border-[var(--color-border)] text-center text-xs text-[var(--color-muted)]">
-    [AdSlot dev placeholder — name="{name}" slot="{slot}"]
+{testMode ? (
+  <div class="my-6 grid h-24 place-items-center rounded-md border border-dashed border-border bg-surface text-xs text-muted">
+    AdSlot {slot} ({format})
   </div>
 ) : (
-  <div class="my-6">
-    <ins class="adsbygoogle block"
-         style="display:block"
-         data-ad-client={AD_CLIENT}
-         data-ad-slot={slot}
-         data-ad-format={format}
-         data-full-width-responsive="true"></ins>
-    <script type="text/javascript" set:html={`(adsbygoogle = window.adsbygoogle || []).push({});`} />
-  </div>
+  <ins class="adsbygoogle my-6 block"
+       style="display:block"
+       data-ad-client={ADSENSE_CLIENT}
+       data-ad-slot={slot}
+       data-ad-format={format}
+       data-ad-layout={layout}
+       data-full-width-responsive={responsive ? 'true' : 'false'}></ins>
+  <script is:inline>
+    (window.adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
 )}
 ```
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 3: Criar src/components/Header.astro**
+
+```astro
+---
+---
+<header class="sticky top-0 z-30 border-b border-border bg-bg/90 backdrop-blur">
+  <div class="container-app flex h-14 items-center justify-between">
+    <a href="/" class="text-base font-bold text-primary">⛽ Fuel Calc</a>
+    <nav class="flex items-center gap-4 text-sm text-muted">
+      <a href="/configuracoes" aria-label="Configurações">⚙</a>
+      <a href="/sobre">Sobre</a>
+    </nav>
+  </div>
+</header>
+```
+
+- [ ] **Step 4: Criar src/components/Footer.astro**
+
+```astro
+---
+---
+<footer class="mt-12 border-t border-border bg-surface py-6 text-center text-sm text-muted">
+  <div class="container-app">
+    <nav class="mb-3 flex flex-wrap justify-center gap-4">
+      <a href="/" class="hover:text-text">Calculadora</a>
+      <a href="/calculadora/civic-2018" class="hover:text-text">Civic 2018</a>
+      <a href="/configuracoes" class="hover:text-text">Configurações</a>
+      <a href="/sobre" class="hover:text-text">Sobre</a>
+    </nav>
+    <p>Feito com <span class="text-danger">♥</span> por <a class="underline hover:text-text" href="https://www.linkedin.com/in/marcio-lucas/">Márcio Lucas</a></p>
+  </div>
+</footer>
+```
+
+- [ ] **Step 5: Criar src/layouts/Layout.astro**
+
+```astro
+---
+import '../styles/globals.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { ADSENSE_CLIENT } from '../lib/ads';
+interface Props { title: string }
+const { title } = Astro.props;
+const isDev = import.meta.env.DEV;
+---
+<!doctype html>
+<html lang="pt-BR" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0B1220" />
+    <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-152x152.png" />
+    <slot name="head" />
+    {!isDev && (
+      <script async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`} crossorigin="anonymous"></script>
+    )}
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <Header />
+    <main class="flex-1"><slot /></main>
+    <Footer />
+  </body>
+</html>
+```
+
+- [ ] **Step 6: Atualizar src/pages/index.astro pra usar Layout**
+
+```astro
+---
+import Layout from '../layouts/Layout.astro';
+import SEO from '../components/SEO.astro';
+import AdSlot from '../components/AdSlot.astro';
+import { AD_SLOTS } from '../lib/ads';
+---
+<Layout title="Calculadora de Combustível">
+  <SEO slot="head"
+    title="Calculadora de Combustível: Etanol ou Gasolina? Calcule Já"
+    description="Descubra qual combustível compensa pra seu carro. Calculadora rápida de etanol vs gasolina com regra dos 70% e preset Honda Civic 2018."
+  />
+  <section class="container-app py-8">
+    <h1 class="text-3xl font-bold sm:text-4xl">Etanol ou Gasolina?</h1>
+    <p class="mt-2 text-muted">Calcule qual combustível compensa pro seu carro.</p>
+    <AdSlot slot={AD_SLOTS.afterHero} />
+  </section>
+</Layout>
+```
+
+- [ ] **Step 7: Verificar dev**
+
+Run: `npm run dev`
+Verificar: header sticky, footer com links, ad placeholder no dev
+
+- [ ] **Step 8: Commit**
 
 ```bash
-git add src/components/AdSlot.astro src/lib/ads.ts
-git commit -m "feat(ads): adslot component with dev placeholder"
+git add src/layouts/ src/components/ src/pages/index.astro
+git commit -m "feat: base layout with seo, header, footer and ad component"
 ```
 
 ---
 
-## Task 8: FuelCalculator + ResultsCards + SavingsHighlight
+## Task 7: FuelCalculator + ResultsCards + SavingsHighlight
 
 **Files:**
-- Create: `src/components/FuelCalculator.astro`, `src/components/ResultsCards.astro`, `src/components/SavingsHighlight.astro`
+- Create: `src/components/FuelCalculator.astro`
+- Create: `src/components/ResultsCards.astro`
+- Create: `src/components/SavingsHighlight.astro`
+- Modify: `src/pages/index.astro`
 
-- [ ] **Step 1: Criar `src/components/SavingsHighlight.astro`**
+- [ ] **Step 1: Criar src/components/SavingsHighlight.astro**
 
 ```astro
 ---
+interface Props {
+  ratio: number;
+  vale: boolean;
+  limite: number;
+}
+const { ratio, vale, limite } = Astro.props;
+const pct = (ratio * 100).toFixed(0);
+const limPct = (limite * 100).toFixed(0);
 ---
-<div id="savingsHighlight" class="hidden my-4 p-4 rounded-lg border" data-vale="false">
-  <p class="text-sm text-[var(--color-muted)]">Regra dos <span id="hRegra">70</span>%</p>
-  <p class="text-lg font-semibold mt-1">
-    Etanol está em <span id="hRatio" class="text-[var(--color-primary)]">--%</span> do preço da gasolina
+<div class={`mt-6 rounded-lg border p-4 ${vale ? 'border-accent bg-accent/10' : 'border-danger bg-danger/10'}`}>
+  <p class="text-sm text-muted">Regra dos {limPct}%</p>
+  <p class="mt-1 text-lg font-semibold">
+    Etanol está em <strong>{pct}%</strong> do preço da gasolina —
+    {vale ? <span class="text-accent">✅ Compensa</span> : <span class="text-danger">❌ Não compensa</span>}
   </p>
-  <p id="hVeredito" class="text-base mt-1"></p>
 </div>
-<style>
-  #savingsHighlight[data-vale="true"]  { background: color-mix(in oklab, var(--color-accent) 15%, transparent); border-color: var(--color-accent); }
-  #savingsHighlight[data-vale="false"][data-shown="true"] { background: color-mix(in oklab, var(--color-danger) 15%, transparent); border-color: var(--color-danger); }
-</style>
 ```
 
-- [ ] **Step 2: Criar `src/components/ResultsCards.astro`**
+- [ ] **Step 2: Criar src/components/ResultsCards.astro**
+
+Mobile: cards empilhados. Desktop (md+): tabela 2 colunas.
 
 ```astro
 ---
-interface Props { id: string; titulo: string; }
-const { id, titulo } = Astro.props;
+interface ContextoProps {
+  titulo: string;
+  vencedor: 'gasolina' | 'etanol';
+  custoGasolinaKm: number;
+  custoEtanolKm: number;
+  autonomiaTanqueGasolina: number;
+  autonomiaTanqueEtanol: number;
+  economiaRs: number;
+}
+const p = Astro.props as ContextoProps;
+const fmt = (n: number) => n.toFixed(2).replace('.', ',');
 ---
-<section id={id} class="hidden mt-6">
-  <h2 class="text-lg font-semibold mb-3">{titulo}</h2>
-  <div class="grid gap-3 md:grid-cols-2">
-    <div class="rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] p-4">
-      <p class="text-xs text-[var(--color-muted)]">Etanol</p>
-      <dl class="mt-2 space-y-1 text-sm">
-        <div class="flex justify-between"><dt>Autonomia</dt><dd data-field="autE">--</dd></div>
-        <div class="flex justify-between"><dt>R$/km</dt><dd data-field="custoE">--</dd></div>
-        <div class="flex justify-between"><dt>Vantajoso</dt><dd data-field="winE">--</dd></div>
-      </dl>
-    </div>
-    <div class="rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] p-4">
-      <p class="text-xs text-[var(--color-muted)]">Gasolina</p>
-      <dl class="mt-2 space-y-1 text-sm">
-        <div class="flex justify-between"><dt>Autonomia</dt><dd data-field="autG">--</dd></div>
-        <div class="flex justify-between"><dt>R$/km</dt><dd data-field="custoG">--</dd></div>
-        <div class="flex justify-between"><dt>Vantajoso</dt><dd data-field="winG">--</dd></div>
-      </dl>
-    </div>
+<section class="mt-6 rounded-lg bg-surface p-4">
+  <h3 class="text-lg font-semibold">{p.titulo}</h3>
+  <div class="mt-3 grid gap-3 sm:grid-cols-2">
+    <article class={`rounded-md p-3 ${p.vencedor === 'gasolina' ? 'bg-primary/10 border border-primary/30' : 'bg-bg/40'}`}>
+      <p class="text-xs uppercase tracking-wide text-muted">Gasolina {p.vencedor === 'gasolina' && <span aria-hidden="true">★</span>}</p>
+      <p class="mt-1 text-2xl font-bold text-primary">R$ {fmt(p.custoGasolinaKm)}<span class="text-xs text-muted">/km</span></p>
+      <p class="mt-1 text-sm text-muted">Tanque: {p.autonomiaTanqueGasolina.toFixed(0)} km</p>
+    </article>
+    <article class={`rounded-md p-3 ${p.vencedor === 'etanol' ? 'bg-accent/10 border border-accent/30' : 'bg-bg/40'}`}>
+      <p class="text-xs uppercase tracking-wide text-muted">Etanol {p.vencedor === 'etanol' && <span aria-hidden="true">★</span>}</p>
+      <p class="mt-1 text-2xl font-bold text-accent">R$ {fmt(p.custoEtanolKm)}<span class="text-xs text-muted">/km</span></p>
+      <p class="mt-1 text-sm text-muted">Tanque: {p.autonomiaTanqueEtanol.toFixed(0)} km</p>
+    </article>
   </div>
-  <p class="mt-3 text-sm">Economia por tanque: <strong data-field="economia" class="text-[var(--color-accent)]">--</strong></p>
+  {p.economiaRs > 0 && (
+    <p class="mt-3 text-sm">Economia por tanque: <strong class="text-accent">R$ {fmt(p.economiaRs)}</strong></p>
+  )}
 </section>
 ```
 
-- [ ] **Step 3: Criar `src/components/FuelCalculator.astro`**
+- [ ] **Step 3: Criar src/components/FuelCalculator.astro**
 
 ```astro
 ---
-import SavingsHighlight from "./SavingsHighlight.astro";
-import ResultsCards from "./ResultsCards.astro";
-import type { Vehicle } from "@/lib/vehicles";
+import { vehicles, DEFAULT_SLUG } from '../lib/vehicles';
+import AdSlot from './AdSlot.astro';
+import { AD_SLOTS } from '../lib/ads';
 
-interface Props { initial: Vehicle; }
-const { initial } = Astro.props;
+interface Props { initialSlug?: string }
+const { initialSlug = DEFAULT_SLUG } = Astro.props;
+const v = vehicles[initialSlug] ?? vehicles[DEFAULT_SLUG];
 ---
-<form id="combustivelForm" class="space-y-5" aria-label="Calculadora de combustível">
-  <input type="hidden" id="tanqueLitros" value={initial.tanque} />
+<form id="combustivel-form" class="container-app py-4 space-y-6"
+      data-tanque={v.tanque}>
+  <div>
+    <label class="block text-sm text-muted" for="vehicle-select">Veículo</label>
+    <select id="vehicle-select" class="mt-1 w-full rounded-md border border-border bg-surface p-3">
+      {Object.values(vehicles).map((veh) => (
+        <option value={veh.slug} selected={veh.slug === v.slug}>
+          {veh.marca} {veh.modelo} {veh.ano}
+        </option>
+      ))}
+    </select>
+  </div>
 
   <fieldset class="space-y-3">
-    <legend class="text-sm font-semibold text-[var(--color-muted)]">Cidade</legend>
-    <div class="grid gap-3 md:grid-cols-2">
+    <legend class="text-base font-semibold">Cidade — autonomia (km/l)</legend>
+    <div class="grid gap-3 sm:grid-cols-2">
       <label class="block">
-        <span class="text-sm">Autonomia gasolina (km/l)</span>
-        <input id="autonomiaGasolinaCidade" type="number" inputmode="decimal" step="0.01" min="0"
-          value={initial.autonomia.gasolina.cidade}
-          class="mt-1 w-full rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] px-3 py-2" />
+        <span class="text-sm text-muted">Gasolina</span>
+        <input id="ag-cidade" type="number" inputmode="decimal" step="0.01" min="0"
+               value={v.autonomia.gasolina.cidade}
+               class="mt-1 w-full rounded-md border border-border bg-surface p-3" />
       </label>
       <label class="block">
-        <span class="text-sm">Autonomia etanol (km/l)</span>
-        <input id="autonomiaEtanolCidade" type="number" inputmode="decimal" step="0.01" min="0"
-          value={initial.autonomia.etanol.cidade}
-          class="mt-1 w-full rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] px-3 py-2" />
+        <span class="text-sm text-muted">Etanol</span>
+        <input id="ae-cidade" type="number" inputmode="decimal" step="0.01" min="0"
+               value={v.autonomia.etanol.cidade}
+               class="mt-1 w-full rounded-md border border-border bg-surface p-3" />
       </label>
     </div>
   </fieldset>
 
   <fieldset class="space-y-3">
-    <legend class="text-sm font-semibold text-[var(--color-muted)]">Estrada</legend>
-    <div class="grid gap-3 md:grid-cols-2">
+    <legend class="text-base font-semibold">Estrada — autonomia (km/l)</legend>
+    <div class="grid gap-3 sm:grid-cols-2">
       <label class="block">
-        <span class="text-sm">Autonomia gasolina (km/l)</span>
-        <input id="autonomiaGasolinaEstrada" type="number" inputmode="decimal" step="0.01" min="0"
-          value={initial.autonomia.gasolina.estrada}
-          class="mt-1 w-full rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] px-3 py-2" />
+        <span class="text-sm text-muted">Gasolina</span>
+        <input id="ag-estrada" type="number" inputmode="decimal" step="0.01" min="0"
+               value={v.autonomia.gasolina.estrada}
+               class="mt-1 w-full rounded-md border border-border bg-surface p-3" />
       </label>
       <label class="block">
-        <span class="text-sm">Autonomia etanol (km/l)</span>
-        <input id="autonomiaEtanolEstrada" type="number" inputmode="decimal" step="0.01" min="0"
-          value={initial.autonomia.etanol.estrada}
-          class="mt-1 w-full rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] px-3 py-2" />
+        <span class="text-sm text-muted">Etanol</span>
+        <input id="ae-estrada" type="number" inputmode="decimal" step="0.01" min="0"
+               value={v.autonomia.etanol.estrada}
+               class="mt-1 w-full rounded-md border border-border bg-surface p-3" />
       </label>
     </div>
   </fieldset>
 
   <fieldset class="space-y-3">
-    <legend class="text-sm font-semibold text-[var(--color-muted)]">Preços hoje</legend>
-    <div class="grid gap-3 md:grid-cols-2">
+    <legend class="text-base font-semibold">Preços (R$/litro)</legend>
+    <div class="grid gap-3 sm:grid-cols-2">
       <label class="block">
-        <span class="text-sm">Gasolina (R$)</span>
-        <input id="precoGasolina" type="number" inputmode="decimal" step="0.01" min="0" value="4.90"
-          class="mt-1 w-full rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] px-3 py-2" />
+        <span class="text-sm text-muted">Gasolina</span>
+        <input id="preco-g" type="number" inputmode="decimal" step="0.01" min="0"
+               value="4.90"
+               class="mt-1 w-full rounded-md border border-border bg-surface p-3" />
       </label>
       <label class="block">
-        <span class="text-sm">Etanol (R$)</span>
-        <input id="precoEtanol" type="number" inputmode="decimal" step="0.01" min="0" value="3.79"
-          class="mt-1 w-full rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] px-3 py-2" />
+        <span class="text-sm text-muted">Etanol</span>
+        <input id="preco-e" type="number" inputmode="decimal" step="0.01" min="0"
+               value="3.79"
+               class="mt-1 w-full rounded-md border border-border bg-surface p-3" />
       </label>
     </div>
   </fieldset>
 
-  <button type="submit" class="w-full rounded-lg bg-[var(--color-primary)] text-black font-semibold py-3 text-base active:scale-[0.98] transition">
+  <button type="submit"
+          class="w-full rounded-md bg-primary py-4 text-base font-bold text-bg active:scale-[0.99]">
     Calcular
   </button>
 </form>
 
-<div aria-live="polite">
-  <SavingsHighlight />
-  <ResultsCards id="resultadoCidade" titulo="Cidade" />
-  <ResultsCards id="resultadoEstrada" titulo="Estrada" />
-</div>
+<div id="resultado" aria-live="polite"></div>
 
 <script>
-  import { custoPorKm, melhorCombustivel, regraSetenta, economiaPorTanque } from "@/lib/calc";
-  import { getItem, setItem } from "@/lib/storage";
+  import { economiaPorTanque, regraSetenta } from '../lib/calc';
+  import { storage } from '../lib/storage';
+  import { vehicles, DEFAULT_SLUG } from '../lib/vehicles';
+  import { decodeShare } from '../lib/share';
 
-  const form = document.getElementById("combustivelForm") as HTMLFormElement;
-  const f = (id: string) => parseFloat((document.getElementById(id) as HTMLInputElement).value);
+  const form = document.getElementById('combustivel-form') as HTMLFormElement;
+  const select = document.getElementById('vehicle-select') as HTMLSelectElement;
+  const resultadoEl = document.getElementById('resultado')!;
 
-  const settings = getItem<{ regra70: number }>("settings", { regra70: 0.7 });
-  const lastPrices = getItem<{ gasolina: number; etanol: number } | null>("last-prices", null);
-  if (lastPrices) {
-    (document.getElementById("precoGasolina") as HTMLInputElement).value = String(lastPrices.gasolina);
-    (document.getElementById("precoEtanol")   as HTMLInputElement).value = String(lastPrices.etanol);
+  const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+
+  function applyVehicle(slug: string) {
+    const v = vehicles[slug];
+    if (!v) return;
+    $('ag-cidade').value = String(v.autonomia.gasolina.cidade);
+    $('ae-cidade').value = String(v.autonomia.etanol.cidade);
+    $('ag-estrada').value = String(v.autonomia.gasolina.estrada);
+    $('ae-estrada').value = String(v.autonomia.etanol.estrada);
+    form.dataset.tanque = String(v.tanque);
   }
 
-  function setField(section: string, field: string, val: string) {
-    document.querySelector(`#${section} [data-field="${field}"]`)!.textContent = val;
+  // restore from URL or last prices
+  const params = decodeShare(window.location.search);
+  if (params.v && vehicles[params.v]) {
+    select.value = params.v;
+    applyVehicle(params.v);
+  }
+  if (params.g) $('preco-g').value = params.g.toFixed(2);
+  if (params.e) $('preco-e').value = params.e.toFixed(2);
+  if (!params.g && !params.e) {
+    const last = storage.getLastPrices();
+    if (last.gasolina) $('preco-g').value = last.gasolina.toFixed(2);
+    if (last.etanol) $('preco-e').value = last.etanol.toFixed(2);
   }
 
-  function render(section: string, autG: number, autE: number, precoG: number, precoE: number, tanque: number) {
-    const cG = custoPorKm(precoG, autG);
-    const cE = custoPorKm(precoE, autE);
-    const winner = melhorCombustivel(cG, cE);
-    const econ = economiaPorTanque({ precoG, precoE, autG, autE, tanque });
-    const kmG = autG * tanque, kmE = autE * tanque;
+  select.addEventListener('change', () => applyVehicle(select.value));
 
-    setField(section, "autG", `${kmG.toFixed(0)} km`);
-    setField(section, "autE", `${kmE.toFixed(0)} km`);
-    setField(section, "custoG", `R$ ${cG.toFixed(2)}`);
-    setField(section, "custoE", `R$ ${cE.toFixed(2)}`);
-    setField(section, "winG", winner === "gasolina" ? "✓" : "");
-    setField(section, "winE", winner === "etanol" ? "✓" : "");
-    setField(section, "economia", `R$ ${econ.toFixed(2)}`);
-    document.getElementById(section)!.classList.remove("hidden");
-  }
-
-  form.addEventListener("submit", (e) => {
+  form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const tanque = parseFloat((document.getElementById("tanqueLitros") as HTMLInputElement).value);
-    const precoG = f("precoGasolina"), precoE = f("precoEtanol");
+    const tanque = Number(form.dataset.tanque ?? 50);
+    const precoG = parseFloat($('preco-g').value);
+    const precoE = parseFloat($('preco-e').value);
+    const cidade = economiaPorTanque({
+      precoGasolina: precoG, autonomiaGasolina: parseFloat($('ag-cidade').value),
+      precoEtanol: precoE, autonomiaEtanol: parseFloat($('ae-cidade').value),
+      tanque,
+    });
+    const estrada = economiaPorTanque({
+      precoGasolina: precoG, autonomiaGasolina: parseFloat($('ag-estrada').value),
+      precoEtanol: precoE, autonomiaEtanol: parseFloat($('ae-estrada').value),
+      tanque,
+    });
+    const settings = storage.getSettings();
+    const r70 = regraSetenta(precoE, precoG, settings.regra70);
 
-    render("resultadoCidade",  f("autonomiaGasolinaCidade"),  f("autonomiaEtanolCidade"),  precoG, precoE, tanque);
-    render("resultadoEstrada", f("autonomiaGasolinaEstrada"), f("autonomiaEtanolEstrada"), precoG, precoE, tanque);
+    storage.setLastPrices({ gasolina: precoG, etanol: precoE });
+    storage.pushHistory({
+      ts: Date.now(), vehicleSlug: select.value,
+      prices: { gasolina: precoG, etanol: precoE },
+      vencedorCidade: cidade.vencedor, vencedorEstrada: estrada.vencedor,
+    });
 
-    const r = regraSetenta(precoE, precoG, settings.regra70);
-    const h = document.getElementById("savingsHighlight")!;
-    h.classList.remove("hidden");
-    h.setAttribute("data-vale", String(r.vale));
-    h.setAttribute("data-shown", "true");
-    document.getElementById("hRegra")!.textContent = String(Math.round(settings.regra70 * 100));
-    document.getElementById("hRatio")!.textContent = `${(r.ratio * 100).toFixed(1)}%`;
-    document.getElementById("hVeredito")!.textContent = r.vale ? "✅ Compensa abastecer com etanol" : "❌ Não compensa — abasteça com gasolina";
-
-    setItem("last-prices", { gasolina: precoG, etanol: precoE });
+    const fmt = (n: number) => n.toFixed(2).replace('.', ',');
+    const tone = r70.vale ? 'border-accent bg-accent/10' : 'border-danger bg-danger/10';
+    const valeLabel = r70.vale ? '<span class="text-accent">✅ Compensa</span>' : '<span class="text-danger">❌ Não compensa</span>';
+    const card = (titulo: string, c: typeof cidade) => `
+      <section class="mt-6 rounded-lg bg-surface p-4">
+        <h3 class="text-lg font-semibold">${titulo}</h3>
+        <div class="mt-3 grid gap-3 sm:grid-cols-2">
+          <article class="${c.vencedor === 'gasolina' ? 'bg-primary/10 border border-primary/30' : 'bg-bg/40'} rounded-md p-3">
+            <p class="text-xs uppercase tracking-wide text-muted">Gasolina ${c.vencedor === 'gasolina' ? '★' : ''}</p>
+            <p class="mt-1 text-2xl font-bold text-primary">R$ ${fmt(c.custoGasolinaKm)}<span class="text-xs text-muted">/km</span></p>
+            <p class="mt-1 text-sm text-muted">Tanque: ${c.autonomiaTanqueGasolina.toFixed(0)} km</p>
+          </article>
+          <article class="${c.vencedor === 'etanol' ? 'bg-accent/10 border border-accent/30' : 'bg-bg/40'} rounded-md p-3">
+            <p class="text-xs uppercase tracking-wide text-muted">Etanol ${c.vencedor === 'etanol' ? '★' : ''}</p>
+            <p class="mt-1 text-2xl font-bold text-accent">R$ ${fmt(c.custoEtanolKm)}<span class="text-xs text-muted">/km</span></p>
+            <p class="mt-1 text-sm text-muted">Tanque: ${c.autonomiaTanqueEtanol.toFixed(0)} km</p>
+          </article>
+        </div>
+        ${c.economiaRs > 0 ? `<p class="mt-3 text-sm">Economia por tanque: <strong class="text-accent">R$ ${fmt(c.economiaRs)}</strong></p>` : ''}
+      </section>
+    `;
+    const lim = (settings.regra70 * 100).toFixed(0);
+    const pct = (r70.ratio * 100).toFixed(0);
+    resultadoEl.innerHTML = `
+      <div class="container-app">
+        <div class="mt-6 rounded-lg border p-4 ${tone}">
+          <p class="text-sm text-muted">Regra dos ${lim}%</p>
+          <p class="mt-1 text-lg font-semibold">Etanol em <strong>${pct}%</strong> do preço da gasolina — ${valeLabel}</p>
+        </div>
+        ${card('Cidade', cidade)}
+        ${card('Estrada', estrada)}
+      </div>
+    `;
+    resultadoEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 </script>
 ```
 
-- [ ] **Step 4: Validar build**
-
-```bash
-npm run build
-```
-Expected: build succeeds.
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add src/components/FuelCalculator.astro src/components/ResultsCards.astro src/components/SavingsHighlight.astro
-git commit -m "feat: fuel calculator with results cards and 70% rule highlight"
-```
-
----
-
-## Task 9: Página inicial + FAQ
-
-**Files:**
-- Create: `src/pages/index.astro`, `src/components/FAQ.astro`
-
-- [ ] **Step 1: Criar `src/components/FAQ.astro`**
+- [ ] **Step 4: Atualizar src/pages/index.astro**
 
 ```astro
 ---
-import faq from "@/data/faq.json";
+import Layout from '../layouts/Layout.astro';
+import SEO from '../components/SEO.astro';
+import AdSlot from '../components/AdSlot.astro';
+import FuelCalculator from '../components/FuelCalculator.astro';
+import { AD_SLOTS } from '../lib/ads';
 ---
-<section class="mt-12">
-  <h2 class="text-xl font-semibold mb-4">Perguntas frequentes</h2>
-  <div class="space-y-3">
-    {faq.map((item) => (
-      <details class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
-        <summary class="font-medium cursor-pointer">{item.q}</summary>
-        <p class="mt-2 text-sm text-[var(--color-muted)]">{item.a}</p>
-      </details>
-    ))}
+<Layout title="Calculadora de Combustível">
+  <SEO slot="head"
+    title="Calculadora de Combustível: Etanol ou Gasolina? — Vale a Pena"
+    description="Calcule rápido qual combustível compensa: etanol ou gasolina. Mobile-first, com regra dos 70% e suporte a múltiplos veículos."
+  />
+  <section class="container-app pt-8 pb-2">
+    <h1 class="text-3xl font-bold sm:text-4xl">Etanol ou Gasolina?</h1>
+    <p class="mt-2 text-muted">Calcule em segundos qual combustível rende mais pro seu carro.</p>
+    <AdSlot slot={AD_SLOTS.afterHero} />
+  </section>
+  <FuelCalculator />
+  <div class="container-app">
+    <AdSlot slot={AD_SLOTS.inArticle} format="fluid" layout="in-article" />
   </div>
-</section>
+  <div class="container-app">
+    <AdSlot slot={AD_SLOTS.footer} />
+  </div>
+</Layout>
 ```
 
-- [ ] **Step 2: Criar `src/pages/index.astro`**
+- [ ] **Step 5: Testar fluxo no dev**
 
-```astro
----
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import FuelCalculator from "@/components/FuelCalculator.astro";
-import FAQ from "@/components/FAQ.astro";
-import AdSlot from "@/components/AdSlot.astro";
-import { getVehicle, DEFAULT_SLUG } from "@/lib/vehicles";
-import faq from "@/data/faq.json";
-import { webApplicationLd, faqLd } from "@/lib/seo";
-
-const initial = getVehicle(DEFAULT_SLUG)!;
-const title = "Calculadora de Combustível: Etanol ou Gasolina? Descubra qual compensa";
-const description = "Calcule em segundos qual combustível compensa mais para o seu carro. Regra dos 70% automática, autonomias por modelo e economia por tanque.";
----
-<BaseLayout title={title} description={description} jsonLd={[webApplicationLd(), faqLd(faq)]}>
-  <section class="text-center py-6">
-    <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-primary)]">Etanol ou gasolina: o que compensa?</h1>
-    <p class="mt-2 text-[var(--color-muted)] text-sm sm:text-base">Calcule em segundos qual combustível vale a pena hoje.</p>
-  </section>
-
-  <AdSlot name="topo" />
-
-  <FuelCalculator initial={initial} />
-
-  <AdSlot name="inline" />
-
-  <section class="mt-10">
-    <h2 class="text-xl font-semibold mb-3">Como funciona</h2>
-    <p class="text-sm text-[var(--color-muted)] leading-relaxed">
-      A calculadora compara o custo por quilômetro do etanol e da gasolina usando a autonomia do seu carro
-      (km/l) e o preço atual de cada combustível. Como o etanol rende menos por litro, a regra dos 70% diz
-      que ele compensa quando seu preço é até 70% do preço da gasolina. Esse limite é uma média — você pode
-      ajustar em <a href="/configuracoes" class="underline">Configurações</a> para refletir o comportamento
-      real do seu motor. Os valores e o seu carro ficam salvos no navegador, sem servidor.
-    </p>
-  </section>
-
-  <FAQ />
-</BaseLayout>
-```
-
-- [ ] **Step 3: rodar dev e testar manualmente**
-
-```bash
-npm run dev
-```
-Abrir http://localhost:4321 e:
-- preencher formulário, clicar Calcular
-- ver Highlight com %, Cards de Cidade/Estrada
-- conferir mobile via DevTools 375px
-
-- [ ] **Step 4: Commit**
-
-```bash
-git add src/pages/index.astro src/components/FAQ.astro
-git commit -m "feat: home page with calculator, FAQ and JSON-LD"
-```
-
----
-
-## Task 10: Rota dinâmica `/calculadora/[slug]`
-
-**Files:**
-- Create: `src/pages/calculadora/[slug].astro`
-
-- [ ] **Step 1: Criar arquivo**
-
-```astro
----
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import FuelCalculator from "@/components/FuelCalculator.astro";
-import FAQ from "@/components/FAQ.astro";
-import AdSlot from "@/components/AdSlot.astro";
-import { vehicles, type Vehicle } from "@/lib/vehicles";
-import { vehicleLd, breadcrumbLd, faqLd, SITE_URL } from "@/lib/seo";
-import faq from "@/data/faq.json";
-
-export async function getStaticPaths() {
-  return vehicles.map(v => ({ params: { slug: v.slug }, props: { vehicle: v } }));
-}
-
-interface Props { vehicle: Vehicle; }
-const { vehicle } = Astro.props;
-const title = `Calculadora Etanol ou Gasolina ${vehicle.modelo} ${vehicle.ano} — Vale a pena?`;
-const description = `Descubra se compensa abastecer com etanol ou gasolina no ${vehicle.marca} ${vehicle.modelo} ${vehicle.ano}. Calcule com autonomia média e preços do dia.`;
----
-<BaseLayout title={title} description={description} jsonLd={[
-  vehicleLd(vehicle),
-  faqLd(faq),
-  breadcrumbLd([
-    { name: "Início", url: SITE_URL },
-    { name: "Calculadora", url: `${SITE_URL}/` },
-    { name: `${vehicle.marca} ${vehicle.modelo} ${vehicle.ano}`, url: `${SITE_URL}/calculadora/${vehicle.slug}` }
-  ])
-]}>
-  <section class="text-center py-6">
-    <p class="text-xs uppercase tracking-wide text-[var(--color-muted)]">{vehicle.marca}</p>
-    <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-primary)]">{vehicle.modelo} {vehicle.ano}</h1>
-    <p class="mt-2 text-[var(--color-muted)] text-sm">Tanque {vehicle.tanque}L · Autonomia média: {vehicle.autonomia.gasolina.cidade} km/l (gasolina cidade)</p>
-  </section>
-
-  <AdSlot name="topo" />
-  <FuelCalculator initial={vehicle} />
-  <AdSlot name="inline" />
-
-  <section class="mt-10">
-    <h2 class="text-xl font-semibold mb-3">Sobre o {vehicle.modelo} {vehicle.ano}</h2>
-    <p class="text-sm text-[var(--color-muted)] leading-relaxed">
-      Os valores de autonomia exibidos são médias do INMETRO/PBE para o {vehicle.marca} {vehicle.modelo} {vehicle.ano}.
-      Para um cálculo mais preciso, edite os campos com os números reais do seu uso (você consegue
-      encher o tanque, anotar o hodômetro e calcular km/l manualmente).
-    </p>
-  </section>
-
-  <FAQ />
-</BaseLayout>
-```
-
-- [ ] **Step 2: Validar build**
-
-```bash
-npm run build
-```
-Expected: 10 páginas estáticas geradas em `dist/calculadora/*`.
-
-- [ ] **Step 3: Commit**
-
-```bash
-git add src/pages/calculadora
-git commit -m "feat: dynamic route per vehicle with vehicle/breadcrumb JSON-LD"
-```
-
----
-
-## Task 11: VehicleSelector (ilha React) + cadastrar meu carro
-
-**Files:**
-- Create: `src/components/VehicleSelector.tsx`
-- Modify: `src/components/FuelCalculator.astro` para incluir o selector no topo
-
-- [ ] **Step 1: Criar `src/components/VehicleSelector.tsx`**
-
-```tsx
-import { useEffect, useMemo, useState } from "react";
-import { vehicles, type Vehicle } from "@/lib/vehicles";
-import { getItem, setItem, removeItem } from "@/lib/storage";
-
-type Props = { onSelect: (v: Vehicle) => void; defaultSlug: string; };
-
-export default function VehicleSelector({ onSelect, defaultSlug }: Props) {
-  const [meu, setMeu] = useState<Vehicle | null>(() => getItem<Vehicle | null>("user-vehicle", null));
-  const [slug, setSlug] = useState<string>(meu ? "__meu" : defaultSlug);
-  const [showForm, setShowForm] = useState(false);
-
-  const all = useMemo<Array<{ slug: string; label: string; v: Vehicle }>>(() => {
-    const list = vehicles.map(v => ({ slug: v.slug, label: `${v.marca} ${v.modelo} ${v.ano}`, v }));
-    if (meu) list.unshift({ slug: "__meu", label: `🚗 Meu carro: ${meu.marca} ${meu.modelo} ${meu.ano}`, v: meu });
-    return list;
-  }, [meu]);
-
-  useEffect(() => {
-    const found = all.find(x => x.slug === slug);
-    if (found) onSelect(found.v);
-  }, [slug, all, onSelect]);
-
-  function saveMyCar(v: Vehicle) {
-    setItem("user-vehicle", v);
-    setMeu(v);
-    setSlug("__meu");
-    setShowForm(false);
-  }
-
-  function removeMyCar() {
-    removeItem("user-vehicle");
-    setMeu(null);
-    setSlug(defaultSlug);
-  }
-
-  return (
-    <div className="space-y-3">
-      <label className="block">
-        <span className="text-sm">Veículo</span>
-        <select value={slug} onChange={e => setSlug(e.target.value)}
-          className="mt-1 w-full rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] px-3 py-2">
-          {all.map(o => <option key={o.slug} value={o.slug}>{o.label}</option>)}
-        </select>
-      </label>
-      <div className="flex gap-2 text-sm">
-        <button type="button" onClick={() => setShowForm(s => !s)} className="underline text-[var(--color-primary)]">
-          {meu ? "Editar meu carro" : "Cadastrar meu carro"}
-        </button>
-        {meu && <button type="button" onClick={removeMyCar} className="underline text-[var(--color-danger)]">Remover</button>}
-      </div>
-      {showForm && <MyCarForm initial={meu} onSave={saveMyCar} onCancel={() => setShowForm(false)} />}
-    </div>
-  );
-}
-
-function MyCarForm({ initial, onSave, onCancel }: {
-  initial: Vehicle | null; onSave: (v: Vehicle) => void; onCancel: () => void;
-}) {
-  const [v, setV] = useState<Vehicle>(initial ?? {
-    slug: "meu-carro", marca: "", modelo: "", ano: new Date().getFullYear(), tanque: 50,
-    autonomia: { gasolina: { cidade: 10, estrada: 13 }, etanol: { cidade: 7, estrada: 9 } }
-  });
-  const set = (patch: Partial<Vehicle>) => setV(prev => ({ ...prev, ...patch }));
-  const setAut = (fuel: "gasolina" | "etanol", k: "cidade" | "estrada", val: number) =>
-    setV(prev => ({ ...prev, autonomia: { ...prev.autonomia, [fuel]: { ...prev.autonomia[fuel], [k]: val } } }));
-
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!v.marca || !v.modelo) return;
-    onSave({ ...v, slug: "meu-carro" });
-  }
-
-  const inp = "mt-1 w-full rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] px-3 py-2";
-  return (
-    <form onSubmit={submit} className="rounded-lg border border-[var(--color-border)] p-4 space-y-3 bg-[var(--color-surface)]/50">
-      <div className="grid gap-3 md:grid-cols-2">
-        <label className="block"><span className="text-sm">Marca</span>
-          <input className={inp} value={v.marca} onChange={e => set({ marca: e.target.value })} required /></label>
-        <label className="block"><span className="text-sm">Modelo</span>
-          <input className={inp} value={v.modelo} onChange={e => set({ modelo: e.target.value })} required /></label>
-        <label className="block"><span className="text-sm">Ano</span>
-          <input className={inp} type="number" value={v.ano} onChange={e => set({ ano: Number(e.target.value) })} /></label>
-        <label className="block"><span className="text-sm">Tanque (L)</span>
-          <input className={inp} type="number" step="1" value={v.tanque} onChange={e => set({ tanque: Number(e.target.value) })} /></label>
-      </div>
-      <div className="grid gap-3 md:grid-cols-2">
-        <label className="block"><span className="text-sm">Gasolina cidade (km/l)</span>
-          <input className={inp} type="number" step="0.01" inputMode="decimal" value={v.autonomia.gasolina.cidade} onChange={e => setAut("gasolina","cidade",Number(e.target.value))} /></label>
-        <label className="block"><span className="text-sm">Gasolina estrada (km/l)</span>
-          <input className={inp} type="number" step="0.01" inputMode="decimal" value={v.autonomia.gasolina.estrada} onChange={e => setAut("gasolina","estrada",Number(e.target.value))} /></label>
-        <label className="block"><span className="text-sm">Etanol cidade (km/l)</span>
-          <input className={inp} type="number" step="0.01" inputMode="decimal" value={v.autonomia.etanol.cidade} onChange={e => setAut("etanol","cidade",Number(e.target.value))} /></label>
-        <label className="block"><span className="text-sm">Etanol estrada (km/l)</span>
-          <input className={inp} type="number" step="0.01" inputMode="decimal" value={v.autonomia.etanol.estrada} onChange={e => setAut("etanol","estrada",Number(e.target.value))} /></label>
-      </div>
-      <div className="flex gap-2">
-        <button type="submit" className="rounded bg-[var(--color-primary)] text-black px-4 py-2 text-sm font-semibold">Salvar</button>
-        <button type="button" onClick={onCancel} className="rounded border border-[var(--color-border)] px-4 py-2 text-sm">Cancelar</button>
-      </div>
-    </form>
-  );
-}
-```
-
-- [ ] **Step 2: Modificar `FuelCalculator.astro` — adicionar selector no topo**
-
-No início do form, antes do primeiro fieldset, inserir:
-```astro
-<div id="vehicleSelectorMount"></div>
-```
-
-E adicionar ao final do `<script>` existente, lógica de re-popular inputs quando selector emitir mudança via custom event:
-```ts
-window.addEventListener("fuelcalc:vehicle-selected", (ev: Event) => {
-  const v = (ev as CustomEvent).detail;
-  (document.getElementById("autonomiaGasolinaCidade") as HTMLInputElement).value = String(v.autonomia.gasolina.cidade);
-  (document.getElementById("autonomiaEtanolCidade")   as HTMLInputElement).value = String(v.autonomia.etanol.cidade);
-  (document.getElementById("autonomiaGasolinaEstrada") as HTMLInputElement).value = String(v.autonomia.gasolina.estrada);
-  (document.getElementById("autonomiaEtanolEstrada")   as HTMLInputElement).value = String(v.autonomia.etanol.estrada);
-  (document.getElementById("tanqueLitros") as HTMLInputElement).value = String(v.tanque);
-});
-```
-
-- [ ] **Step 3: Wrapper Astro que monta a ilha**
-
-Criar `src/components/VehicleSelectorIsland.astro`:
-```astro
----
-import VehicleSelector from "./VehicleSelector";
-import { DEFAULT_SLUG } from "@/lib/vehicles";
-interface Props { defaultSlug?: string; }
-const { defaultSlug = DEFAULT_SLUG } = Astro.props;
----
-<VehicleSelector client:load defaultSlug={defaultSlug} onSelect={(v) => {
-  window.dispatchEvent(new CustomEvent("fuelcalc:vehicle-selected", { detail: v }));
-}} />
-```
-
-> Astro não permite passar funções para client:load. Em vez disso, ajuste o componente React para emitir o evento ele mesmo:
-
-Editar `VehicleSelector.tsx` no `useEffect`:
-```ts
-useEffect(() => {
-  const found = all.find(x => x.slug === slug);
-  if (found) {
-    onSelect?.(found.v);
-    window.dispatchEvent(new CustomEvent("fuelcalc:vehicle-selected", { detail: found.v }));
-  }
-}, [slug, all, onSelect]);
-```
-E tornar `onSelect` opcional: `onSelect?: (v: Vehicle) => void`.
-
-Simplifica o wrapper:
-```astro
----
-import VehicleSelector from "./VehicleSelector";
-interface Props { defaultSlug: string; }
-const { defaultSlug } = Astro.props;
----
-<VehicleSelector client:load defaultSlug={defaultSlug} />
-```
-
-- [ ] **Step 4: Atualizar `FuelCalculator.astro` para incluir o island**
-
-No topo do componente, importar e usar:
-```astro
-import VehicleSelectorIsland from "./VehicleSelectorIsland.astro";
-```
-E no template, antes do primeiro fieldset:
-```astro
-<VehicleSelectorIsland defaultSlug={initial.slug} />
-```
-
-- [ ] **Step 5: Testar manualmente**
-
-```bash
-npm run dev
-```
-- Selecionar veículos diferentes → inputs atualizam
-- Cadastrar meu carro → aparece como primeira opção
-- Recarregar → meu carro persiste
+Run: `npm run dev`
+Verificar: form preenche com Civic, troca de veículo atualiza autonomias, calcular mostra 2 cards + banner regra 70%, scroll suave, mobile width 375px usa coluna única.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/components/VehicleSelector.tsx src/components/VehicleSelectorIsland.astro src/components/FuelCalculator.astro
-git commit -m "feat: vehicle selector island with my-car localStorage"
+git add src/components/ src/pages/index.astro
+git commit -m "feat: fuel calculator with results and 70% rule"
 ```
 
 ---
 
-## Task 12: TripCalculator + ShareButton + History (ilhas)
+## Task 8: Página dinâmica `/calculadora/[slug]`
 
 **Files:**
-- Create: `src/components/TripCalculator.tsx`, `src/components/ShareButton.tsx`, `src/components/History.tsx`
+- Create: `src/pages/calculadora/[slug].astro`
 
-- [ ] **Step 1: TripCalculator**
+- [ ] **Step 1: Criar página dinâmica**
 
-`src/components/TripCalculator.tsx`:
-```tsx
-import { useState } from "react";
-import { custoPorKm, custoViagem, tanquesPorViagem, melhorCombustivel } from "@/lib/calc";
+```astro
+---
+import Layout from '../../layouts/Layout.astro';
+import SEO from '../../components/SEO.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import FuelCalculator from '../../components/FuelCalculator.astro';
+import { listVehicles, getVehicle, vehicleTitle } from '../../lib/vehicles';
+import { AD_SLOTS } from '../../lib/ads';
 
-type Props = {
-  precoG: number; precoE: number; autG: number; autE: number; tanque: number;
+export function getStaticPaths() {
+  return listVehicles().map((v) => ({ params: { slug: v.slug } }));
+}
+
+const { slug } = Astro.params;
+const v = getVehicle(slug!);
+if (!v) return Astro.redirect('/404');
+const title = `Calculadora ${vehicleTitle(v)}: Etanol ou Gasolina?`;
+const description = `Veja se etanol ou gasolina compensa pro ${vehicleTitle(v)}. Autonomias pré-configuradas e cálculo na hora.`;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Vehicle',
+  brand: { '@type': 'Brand', name: v.marca },
+  model: v.modelo,
+  modelDate: String(v.ano),
+  fuelType: 'Flex (gasolina/etanol)',
+  fuelEfficiency: [
+    { '@type': 'QuantitativeValue', value: v.autonomia.gasolina.cidade, unitText: 'km/l (gasolina cidade)' },
+    { '@type': 'QuantitativeValue', value: v.autonomia.gasolina.estrada, unitText: 'km/l (gasolina estrada)' },
+    { '@type': 'QuantitativeValue', value: v.autonomia.etanol.cidade, unitText: 'km/l (etanol cidade)' },
+    { '@type': 'QuantitativeValue', value: v.autonomia.etanol.estrada, unitText: 'km/l (etanol estrada)' },
+  ],
 };
+---
+<Layout title={title}>
+  <SEO slot="head" title={title} description={description} jsonLd={jsonLd} />
+  <section class="container-app pt-8 pb-2">
+    <p class="text-sm text-muted"><a href="/" class="underline">← Calculadora</a></p>
+    <h1 class="mt-2 text-3xl font-bold sm:text-4xl">{vehicleTitle(v)}</h1>
+    <p class="mt-2 text-muted">Etanol ou gasolina pro seu {v.marca} {v.modelo}? Calcule abaixo.</p>
+    <AdSlot slot={AD_SLOTS.afterHero} />
+  </section>
+  <FuelCalculator initialSlug={v.slug} />
+  <div class="container-app">
+    <AdSlot slot={AD_SLOTS.inArticle} format="fluid" layout="in-article" />
+    <AdSlot slot={AD_SLOTS.footer} />
+  </div>
+</Layout>
+```
+
+- [ ] **Step 2: Build e verificar rotas**
+
+Run: `npm run build`
+Expected: `dist/calculadora/civic-2018/index.html` e demais slugs gerados
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/pages/calculadora/
+git commit -m "feat: per-vehicle static routes with vehicle schema"
+```
+
+---
+
+## Task 9: TripCalculator + ShareButton + History
+
+**Files:**
+- Create: `src/components/TripCalculator.tsx`
+- Create: `src/components/ShareButton.tsx`
+- Create: `src/components/History.tsx`
+- Modify: `src/components/FuelCalculator.astro` (montar componentes)
+
+- [ ] **Step 1: Criar src/components/TripCalculator.tsx**
+
+```tsx
+import { useState } from 'react';
+import { custoViagem, tanquesPorViagem } from '../lib/calc';
+
+interface Props {
+  custoGasolinaKm: number;
+  custoEtanolKm: number;
+  autonomiaGasolina: number;
+  autonomiaEtanol: number;
+  tanque: number;
+}
 
 export default function TripCalculator(p: Props) {
-  const [km, setKm] = useState(100);
-  const cG = custoPorKm(p.precoG, p.autG);
-  const cE = custoPorKm(p.precoE, p.autE);
-  const win = melhorCombustivel(cG, cE);
-  const winCusto = win === "gasolina" ? cG : cE;
-  const total = custoViagem(km, winCusto);
-  const tanques = tanquesPorViagem(km, win === "gasolina" ? p.autG : p.autE, p.tanque);
+  const [km, setKm] = useState<number>(0);
+  const fmt = (n: number) => n.toFixed(2).replace('.', ',');
+  const valid = km > 0;
   return (
-    <div className="rounded-lg border border-[var(--color-border)] p-4 mt-6">
-      <h3 className="font-semibold mb-2">Quanto custa minha viagem?</h3>
-      <label className="block">
-        <span className="text-sm">Distância (km)</span>
-        <input type="number" inputMode="decimal" min="0" value={km}
-          onChange={e => setKm(Number(e.target.value))}
-          className="mt-1 w-full rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] px-3 py-2" />
+    <section className="mt-6 rounded-lg bg-surface p-4">
+      <h3 className="text-lg font-semibold">Cálculo de viagem</h3>
+      <label className="mt-3 block">
+        <span className="text-sm text-muted">Quantos km vai rodar?</span>
+        <input type="number" inputMode="decimal" min={0} step={1}
+          value={km || ''} onChange={(e) => setKm(parseFloat(e.target.value) || 0)}
+          className="mt-1 w-full rounded-md border border-border bg-bg p-3" />
       </label>
-      <p className="mt-3 text-sm">
-        Com <strong>{win}</strong>: <strong>R$ {total.toFixed(2)}</strong> ·
-        {" "}{tanques.toFixed(2)} tanques
-      </p>
-    </div>
+      {valid && (
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <p>Gasolina: <strong className="text-primary">R$ {fmt(custoViagem(km, p.custoGasolinaKm))}</strong> · {tanquesPorViagem(km, p.autonomiaGasolina, p.tanque)} tanque(s)</p>
+          <p>Etanol: <strong className="text-accent">R$ {fmt(custoViagem(km, p.custoEtanolKm))}</strong> · {tanquesPorViagem(km, p.autonomiaEtanol, p.tanque)} tanque(s)</p>
+        </div>
+      )}
+    </section>
   );
 }
 ```
 
-> Esse componente recebe props via `client:load` no Astro. Como os preços/autonomias mudam após Calcular, alternativa: o TripCalculator escuta o evento `fuelcalc:calculated` para receber os valores. Implementar essa variação:
+- [ ] **Step 2: Criar src/components/ShareButton.tsx**
 
-Reescrever o componente para escutar evento:
 ```tsx
-import { useEffect, useState } from "react";
-import { custoPorKm, custoViagem, tanquesPorViagem, melhorCombustivel } from "@/lib/calc";
+import { useState } from 'react';
+import { encodeShare } from '../lib/share';
 
-type Calc = { precoG: number; precoE: number; autG: number; autE: number; tanque: number };
-
-export default function TripCalculator() {
-  const [km, setKm] = useState(100);
-  const [c, setC] = useState<Calc | null>(null);
-
-  useEffect(() => {
-    const h = (e: Event) => setC((e as CustomEvent).detail as Calc);
-    window.addEventListener("fuelcalc:calculated", h);
-    return () => window.removeEventListener("fuelcalc:calculated", h);
-  }, []);
-
-  if (!c) return <p className="text-xs text-[var(--color-muted)] mt-6">Calcule acima para ver o custo de uma viagem.</p>;
-
-  const cG = custoPorKm(c.precoG, c.autG);
-  const cE = custoPorKm(c.precoE, c.autE);
-  const win = melhorCombustivel(cG, cE);
-  const winCusto = win === "gasolina" ? cG : cE;
-  const total = custoViagem(km, winCusto);
-  const tanques = tanquesPorViagem(km, win === "gasolina" ? c.autG : c.autE, c.tanque);
-
-  return (
-    <div className="rounded-lg border border-[var(--color-border)] p-4 mt-6">
-      <h3 className="font-semibold mb-2">Quanto custa minha viagem?</h3>
-      <label className="block">
-        <span className="text-sm">Distância (km)</span>
-        <input type="number" inputMode="decimal" min="0" value={km}
-          onChange={e => setKm(Number(e.target.value))}
-          className="mt-1 w-full rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] px-3 py-2" />
-      </label>
-      <p className="mt-3 text-sm">
-        Com <strong>{win}</strong>: <strong>R$ {total.toFixed(2)}</strong> ·
-        {" "}{tanques.toFixed(2)} tanques
-      </p>
-    </div>
-  );
+interface Props {
+  vehicleSlug: string;
+  precoGasolina: number;
+  precoEtanol: number;
 }
-```
 
-- [ ] **Step 2: ShareButton**
-
-`src/components/ShareButton.tsx`:
-```tsx
-import { useEffect, useState } from "react";
-import { encodeShare } from "@/lib/share";
-
-export default function ShareButton({ slug }: { slug: string }) {
-  const [params, setParams] = useState<{ g: number; e: number } | null>(null);
+export default function ShareButton(p: Props) {
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    const h = (e: Event) => {
-      const d = (e as CustomEvent).detail as { precoG: number; precoE: number };
-      setParams({ g: d.precoG, e: d.precoE });
-    };
-    window.addEventListener("fuelcalc:calculated", h);
-    return () => window.removeEventListener("fuelcalc:calculated", h);
-  }, []);
-
-  if (!params) return null;
-  const url = `${location.origin}${location.pathname}${encodeShare({ v: slug, ...params })}`;
-
   async function share() {
+    const qs = encodeShare({ v: p.vehicleSlug, g: p.precoGasolina, e: p.precoEtanol });
+    const url = `${window.location.origin}${window.location.pathname}?${qs}`;
     if (navigator.share) {
-      try { await navigator.share({ title: "Calculadora de Combustível", url }); return; } catch {}
+      try { await navigator.share({ title: 'Cálculo de combustível', url }); return; } catch {}
     }
     await navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
-
   return (
     <button type="button" onClick={share}
-      className="mt-4 w-full rounded-md border border-[var(--color-border)] py-2 text-sm">
-      {copied ? "✅ Link copiado!" : "📤 Compartilhar resultado"}
+      className="mt-4 w-full rounded-md border border-border bg-surface py-3 text-sm">
+      {copied ? '✓ Link copiado' : '🔗 Compartilhar resultado'}
     </button>
   );
 }
 ```
 
-- [ ] **Step 3: History**
+- [ ] **Step 3: Criar src/components/History.tsx**
 
-`src/components/History.tsx`:
 ```tsx
-import { useEffect, useState } from "react";
-import { getItem, setItem } from "@/lib/storage";
+import { useEffect, useState } from 'react';
+import { storage, type CalcHistoryEntry } from '../lib/storage';
 
-type Entry = {
-  ts: number; vehicleSlug: string; precoG: number; precoE: number;
-  winCidade: "gasolina" | "etanol"; winEstrada: "gasolina" | "etanol"; ratio: number;
-};
-
-const MAX = 5;
+function rel(ts: number): string {
+  const m = Math.floor((Date.now() - ts) / 60000);
+  if (m < 1) return 'agora';
+  if (m < 60) return `${m} min atrás`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h atrás`;
+  return `${Math.floor(h / 24)}d atrás`;
+}
 
 export default function History() {
-  const [items, setItems] = useState<Entry[]>(() => getItem<Entry[]>("history", []));
-
-  useEffect(() => {
-    const h = (e: Event) => {
-      const d = (e as CustomEvent).detail as Omit<Entry, "ts">;
-      const next = [{ ...d, ts: Date.now() }, ...items].slice(0, MAX);
-      setItems(next);
-      setItem("history", next);
-    };
-    window.addEventListener("fuelcalc:calculated-history", h);
-    return () => window.removeEventListener("fuelcalc:calculated-history", h);
-  }, [items]);
-
-  if (!items.length) return null;
-
+  const [items, setItems] = useState<CalcHistoryEntry[]>([]);
+  useEffect(() => { setItems(storage.getHistory()); }, []);
+  if (items.length === 0) return null;
   return (
-    <section className="mt-8">
-      <h3 className="font-semibold mb-3">Últimos cálculos</h3>
-      <ul className="space-y-2">
-        {items.map(it => (
-          <li key={it.ts} className="rounded border border-[var(--color-border)] p-3 text-sm flex justify-between">
-            <span>{new Date(it.ts).toLocaleString("pt-BR")} · {it.vehicleSlug}</span>
-            <span className="text-[var(--color-muted)]">G R$ {it.precoG.toFixed(2)} / E R$ {it.precoE.toFixed(2)} · {(it.ratio*100).toFixed(0)}%</span>
+    <section className="mt-6">
+      <h3 className="text-lg font-semibold">Histórico</h3>
+      <ul className="mt-2 space-y-2">
+        {items.map((e) => (
+          <li key={e.ts} className="rounded-md border border-border bg-surface p-3 text-sm">
+            <p className="text-muted">{rel(e.ts)} · {e.vehicleSlug}</p>
+            <p>G R$ {e.prices.gasolina.toFixed(2)} · E R$ {e.prices.etanol.toFixed(2)}</p>
+            <p className="text-muted">Cidade: {e.vencedorCidade} · Estrada: {e.vencedorEstrada}</p>
           </li>
         ))}
       </ul>
@@ -1535,213 +1458,276 @@ export default function History() {
 }
 ```
 
-- [ ] **Step 4: Modificar `FuelCalculator.astro` script — emitir eventos**
+- [ ] **Step 4: Modificar FuelCalculator.astro pra montar History abaixo do form**
 
-Ao final do submit handler:
-```ts
-const detailCalc = {
-  precoG, precoE,
-  autG: f("autonomiaGasolinaCidade"), autE: f("autonomiaEtanolCidade"),
-  tanque
-};
-window.dispatchEvent(new CustomEvent("fuelcalc:calculated", { detail: detailCalc }));
+No final do template, antes do `<script>`, adicionar:
 
-const ratio = regraSetenta(precoE, precoG, settings.regra70).ratio;
-window.dispatchEvent(new CustomEvent("fuelcalc:calculated-history", {
-  detail: {
-    vehicleSlug: (document.getElementById("vehicleSlugInput") as HTMLInputElement | null)?.value ?? "indefinido",
-    precoG, precoE, ratio,
-    winCidade: melhorCombustivel(custoPorKm(precoG, f("autonomiaGasolinaCidade")), custoPorKm(precoE, f("autonomiaEtanolCidade"))),
-    winEstrada: melhorCombustivel(custoPorKm(precoG, f("autonomiaGasolinaEstrada")), custoPorKm(precoE, f("autonomiaEtanolEstrada")))
-  }
-}));
-```
-
-E no template do form, adicionar input hidden recebendo o slug atual:
 ```astro
-<input type="hidden" id="vehicleSlugInput" value={initial.slug} />
-```
-Atualizar o handler do `fuelcalc:vehicle-selected` adicionado na Task 11 para também atualizar:
-```ts
-(document.getElementById("vehicleSlugInput") as HTMLInputElement).value = v.slug;
-```
-
-- [ ] **Step 5: Adicionar ilhas em `index.astro` e `[slug].astro`**
-
-Em ambos, após `<FuelCalculator />`:
-```astro
-<TripCalculator client:load />
-<ShareButton client:load slug={initial.slug /* ou vehicle.slug */} />
-<History client:load />
-```
-Importar no topo:
-```ts
-import TripCalculator from "@/components/TripCalculator";
-import ShareButton from "@/components/ShareButton";
-import History from "@/components/History";
+import History from './History.tsx';
+...
+<div class="container-app">
+  <History client:idle />
+</div>
 ```
 
-- [ ] **Step 6: Suporte a query params na home (decode share)**
+E no final do bloco `<script>` (após popular `resultadoEl.innerHTML`), incluir mount React opcional via dynamic import — mais simples: re-renderizar History após push é dispensável (próxima visita carrega).
 
-No script de `FuelCalculator.astro`, após a leitura de `last-prices`:
-```ts
-import { decodeShare } from "@/lib/share";
-const sp = decodeShare(window.location.search);
-if (sp.g !== undefined) (document.getElementById("precoGasolina") as HTMLInputElement).value = String(sp.g);
-if (sp.e !== undefined) (document.getElementById("precoEtanol")   as HTMLInputElement).value = String(sp.e);
-if (sp.v) {
-  // o select React lerá via storage/init; suficiente disparar evento depois do mount
-  window.addEventListener("load", () => {
-    window.dispatchEvent(new CustomEvent("fuelcalc:share-applied", { detail: sp }));
-  });
-}
+Para Trip e Share, adicionar containers no `resultadoEl.innerHTML` e fazer hydration manual:
+
+Substituir o final do handler `submit` (após `resultadoEl.innerHTML = ...`) por:
+
+```js
+import('react').then((React) =>
+  Promise.all([
+    import('react-dom/client'),
+    import('./TripCalculator.tsx'),
+    import('./ShareButton.tsx'),
+  ]).then(([{ createRoot }, Trip, Share]) => {
+    const tripMount = document.getElementById('trip-mount');
+    const shareMount = document.getElementById('share-mount');
+    if (tripMount) {
+      createRoot(tripMount).render(
+        React.createElement(Trip.default, {
+          custoGasolinaKm: cidade.custoGasolinaKm,
+          custoEtanolKm: cidade.custoEtanolKm,
+          autonomiaGasolina: parseFloat($('ag-cidade').value),
+          autonomiaEtanol: parseFloat($('ae-cidade').value),
+          tanque,
+        })
+      );
+    }
+    if (shareMount) {
+      createRoot(shareMount).render(
+        React.createElement(Share.default, {
+          vehicleSlug: select.value,
+          precoGasolina: precoG, precoEtanol: precoE,
+        })
+      );
+    }
+  })
+);
 ```
 
-(O suporte completo de `v` query depende do selector aceitar slug inicial via prop — já feito.)
+E adicionar no template `resultadoEl.innerHTML`:
 
-- [ ] **Step 7: Testar manualmente**
+```html
+<div id="trip-mount"></div>
+<div id="share-mount"></div>
+```
+
+- [ ] **Step 5: Testar dev — calcular, ver Trip aparecer, share, history**
+
+Run: `npm run dev`
+Verificar: após calcular, TripCalculator e ShareButton aparecem; histórico aparece após 2º cálculo + reload.
+
+- [ ] **Step 6: Commit**
 
 ```bash
-npm run dev
-```
-- Calcular → ver TripCalculator aparecer com valores
-- Calcular → ShareButton aparece, clicar copia URL com query
-- Recarregar com `?g=5.50&e=4.00` → inputs preenchidos
-- Histórico aparece com último cálculo
-
-- [ ] **Step 8: Commit**
-
-```bash
-git add src/components/TripCalculator.tsx src/components/ShareButton.tsx src/components/History.tsx src/components/FuelCalculator.astro src/pages
-git commit -m "feat: trip calculator, share button and history islands"
+git add src/components/
+git commit -m "feat: trip calculator, share and history"
 ```
 
 ---
 
-## Task 13: Página /configuracoes
+## Task 10: Página de configurações
 
 **Files:**
-- Create: `src/pages/configuracoes.astro`, `src/components/SettingsPanel.tsx`
+- Create: `src/pages/configuracoes.astro`
+- Create: `src/components/SettingsPanel.tsx`
 
-- [ ] **Step 1: SettingsPanel**
+- [ ] **Step 1: Criar src/components/SettingsPanel.tsx**
 
-`src/components/SettingsPanel.tsx`:
 ```tsx
-import { useState } from "react";
-import { getItem, setItem, removeItem } from "@/lib/storage";
-
-type Settings = { regra70: number; theme: "dark" | "light" };
+import { useEffect, useState } from 'react';
+import { storage, type Settings } from '../lib/storage';
 
 export default function SettingsPanel() {
-  const [s, setS] = useState<Settings>(() => getItem<Settings>("settings", { regra70: 0.7, theme: "dark" }));
-  const [savedFlash, setSavedFlash] = useState(false);
+  const [s, setS] = useState<Settings>({ regra70: 0.7, theme: 'dark' });
+  const [hasVehicle, setHasVehicle] = useState(false);
 
-  function save(next: Settings) {
+  useEffect(() => {
+    setS(storage.getSettings());
+    setHasVehicle(!!storage.getUserVehicle());
+  }, []);
+
+  function update(patch: Partial<Settings>) {
+    const next = { ...s, ...patch };
     setS(next);
-    setItem("settings", next);
-    setSavedFlash(true);
-    setTimeout(() => setSavedFlash(false), 1500);
-  }
-
-  function clearAll() {
-    if (!confirm("Apagar todos os dados (carro, histórico, preferências)?")) return;
-    ["user-vehicle", "history", "settings", "last-prices"].forEach(removeItem);
-    location.reload();
+    storage.setSettings(next);
   }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-lg border border-[var(--color-border)] p-4">
-        <h2 className="font-semibold">Regra dos {Math.round(s.regra70 * 100)}%</h2>
-        <p className="text-sm text-[var(--color-muted)] mt-1">
-          Limite para considerar etanol vantajoso. Default 70%. Carros mais antigos: 65%. Flex modernos: até 75%.
-        </p>
-        <input type="range" min="0.65" max="0.75" step="0.01" value={s.regra70}
-          onChange={e => save({ ...s, regra70: Number(e.target.value) })}
-          className="w-full mt-3" />
-        <div className="flex justify-between text-xs text-[var(--color-muted)]"><span>65%</span><span>75%</span></div>
+    <div className="container-app py-6 space-y-8">
+      <section className="rounded-lg bg-surface p-4">
+        <h2 className="text-lg font-semibold">Regra dos {Math.round(s.regra70 * 100)}%</h2>
+        <p className="text-sm text-muted">Limite a partir do qual etanol deixa de compensar.</p>
+        <input type="range" min={0.65} max={0.75} step={0.01}
+          value={s.regra70}
+          onChange={(e) => update({ regra70: parseFloat(e.target.value) })}
+          className="mt-3 w-full" />
+        <p className="mt-2 text-sm">Atual: <strong>{Math.round(s.regra70 * 100)}%</strong></p>
       </section>
 
-      <section className="rounded-lg border border-[var(--color-border)] p-4">
-        <h2 className="font-semibold mb-2">Limpar dados</h2>
-        <button onClick={clearAll} className="text-sm rounded border border-[var(--color-danger)] text-[var(--color-danger)] px-4 py-2">
-          Apagar tudo
+      <section className="rounded-lg bg-surface p-4">
+        <h2 className="text-lg font-semibold">Histórico</h2>
+        <button type="button"
+          onClick={() => { storage.clearHistory(); alert('Histórico limpo'); }}
+          className="mt-3 rounded-md border border-border px-4 py-2 text-sm">
+          Limpar histórico
         </button>
       </section>
 
-      {savedFlash && <p className="text-sm text-[var(--color-accent)]">✓ Salvo</p>}
+      <section className="rounded-lg bg-surface p-4">
+        <h2 className="text-lg font-semibold">Meu carro</h2>
+        <p className="text-sm text-muted">{hasVehicle ? 'Salvo no navegador.' : 'Nenhum carro salvo.'}</p>
+        {hasVehicle && (
+          <button type="button"
+            onClick={() => { storage.clearUserVehicle(); setHasVehicle(false); }}
+            className="mt-3 rounded-md border border-danger px-4 py-2 text-sm text-danger">
+            Remover meu carro
+          </button>
+        )}
+      </section>
     </div>
   );
 }
 ```
 
-- [ ] **Step 2: Página**
+- [ ] **Step 2: Criar src/pages/configuracoes.astro**
 
-`src/pages/configuracoes.astro`:
 ```astro
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import SettingsPanel from "@/components/SettingsPanel";
-const title = "Configurações — Calculadora de Combustível";
-const description = "Ajuste a regra dos 70% e gerencie seus dados salvos no navegador.";
+import Layout from '../layouts/Layout.astro';
+import SEO from '../components/SEO.astro';
+import SettingsPanel from '../components/SettingsPanel.tsx';
 ---
-<BaseLayout title={title} description={description}>
-  <h1 class="text-2xl font-bold mb-4">Configurações</h1>
+<Layout title="Configurações — Fuel Calc">
+  <SEO slot="head"
+    title="Configurações — Calculadora de Combustível"
+    description="Ajuste a regra dos 70%, gerencie histórico e dados salvos no navegador."
+  />
+  <section class="container-app pt-8">
+    <h1 class="text-3xl font-bold">Configurações</h1>
+  </section>
   <SettingsPanel client:load />
-</BaseLayout>
+</Layout>
 ```
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 3: Testar — slider salva, limpar histórico funciona**
+
+Run: `npm run dev` → /configuracoes
+
+- [ ] **Step 4: Commit**
 
 ```bash
 git add src/pages/configuracoes.astro src/components/SettingsPanel.tsx
-git commit -m "feat: settings page with 70% rule slider and clear data"
+git commit -m "feat: settings page with 70% rule slider"
 ```
 
 ---
 
-## Task 14: Páginas /sobre, 404, robots, sitemap
+## Task 11: Página /sobre + 404 + FAQ + JSON-LD home
 
 **Files:**
-- Create: `src/pages/sobre.astro`, `src/pages/404.astro`, `public/robots.txt`
+- Create: `src/pages/sobre.astro`
+- Create: `src/pages/404.astro`
+- Create: `src/components/FAQ.astro`
+- Modify: `src/pages/index.astro`
 
-- [ ] **Step 1: `src/pages/sobre.astro`**
-
-```astro
----
-import BaseLayout from "@/layouts/BaseLayout.astro";
----
-<BaseLayout title="Sobre — Calculadora de Combustível"
-            description="Sobre o autor e o propósito da calculadora.">
-  <h1 class="text-2xl font-bold mb-4">Sobre</h1>
-  <p class="text-sm leading-relaxed">
-    Projeto pessoal de Márcio Lucas. Ferramenta gratuita, sem servidor, sem login.
-    Tudo roda no seu navegador. Código aberto no GitHub.
-  </p>
-  <p class="text-sm mt-4">
-    <a class="underline" href="https://www.linkedin.com/in/marcio-lucas/">LinkedIn</a> ·
-    <a class="underline" href="https://github.com/marciioluucas">GitHub</a>
-  </p>
-</BaseLayout>
-```
-
-- [ ] **Step 2: `src/pages/404.astro`**
+- [ ] **Step 1: Criar src/components/FAQ.astro**
 
 ```astro
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
+import faq from '../data/faq.json';
 ---
-<BaseLayout title="Página não encontrada" description="404">
-  <div class="text-center py-12">
-    <p class="text-6xl">⛽</p>
-    <h1 class="text-2xl font-bold mt-4">Tanque vazio</h1>
-    <p class="text-[var(--color-muted)] mt-2">A página que você procura não existe.</p>
-    <a href="/" class="inline-block mt-6 rounded bg-[var(--color-primary)] text-black px-4 py-2 font-semibold">Voltar à calculadora</a>
+<section class="container-app mt-10">
+  <h2 class="text-2xl font-bold">Perguntas frequentes</h2>
+  <div class="mt-4 space-y-3">
+    {faq.map((item) => (
+      <details class="rounded-md border border-border bg-surface p-4">
+        <summary class="cursor-pointer font-semibold">{item.q}</summary>
+        <p class="mt-2 text-muted">{item.a}</p>
+      </details>
+    ))}
   </div>
-</BaseLayout>
+</section>
 ```
 
-- [ ] **Step 3: `public/robots.txt`**
+- [ ] **Step 2: Atualizar src/pages/index.astro com FAQ + JSON-LD**
+
+Adicionar após o FuelCalculator:
+
+```astro
+import FAQ from '../components/FAQ.astro';
+import faq from '../data/faq.json';
+...
+const jsonLd = [
+  { '@context': 'https://schema.org', '@type': 'WebApplication',
+    name: 'Calculadora de Combustível', applicationCategory: 'UtilityApplication',
+    operatingSystem: 'Any', offers: { '@type': 'Offer', price: '0' } },
+  { '@context': 'https://schema.org', '@type': 'FAQPage',
+    mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+];
+```
+
+E passar `jsonLd` ao `<SEO>`. Renderizar `<FAQ />` antes do AdSlot footer.
+
+- [ ] **Step 3: Criar src/pages/sobre.astro**
+
+```astro
+---
+import Layout from '../layouts/Layout.astro';
+import SEO from '../components/SEO.astro';
+---
+<Layout title="Sobre — Fuel Calc">
+  <SEO slot="head" title="Sobre — Fuel Calc" description="Sobre a Calculadora de Combustível." />
+  <section class="container-app py-8 prose prose-invert">
+    <h1 class="text-3xl font-bold">Sobre</h1>
+    <p class="mt-3 text-muted">Calculadora simples e rápida de etanol vs gasolina, criada por <a class="underline" href="https://www.linkedin.com/in/marcio-lucas/">Márcio Lucas</a>. Sem cadastros, sem coletas, tudo roda no seu navegador.</p>
+  </section>
+</Layout>
+```
+
+- [ ] **Step 4: Criar src/pages/404.astro**
+
+```astro
+---
+import Layout from '../layouts/Layout.astro';
+import SEO from '../components/SEO.astro';
+---
+<Layout title="Página não encontrada">
+  <SEO slot="head" title="404" description="Página não encontrada." />
+  <section class="container-app py-16 text-center">
+    <h1 class="text-5xl font-bold text-primary">404</h1>
+    <p class="mt-3 text-muted">Essa página não existe. Voltar pra <a class="underline text-text" href="/">calculadora</a>.</p>
+  </section>
+</Layout>
+```
+
+- [ ] **Step 5: Build e verificar todas rotas**
+
+Run: `npm run build`
+Expected: `dist/index.html`, `dist/sobre/index.html`, `dist/configuracoes/index.html`, `dist/404.html`, `dist/calculadora/<slug>/index.html`, `dist/sitemap-index.xml`
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/pages/ src/components/FAQ.astro
+git commit -m "feat: faq, about, 404 and json-ld"
+```
+
+---
+
+## Task 12: SEO técnico — robots, sitemap, OG default, meta refinements
+
+**Files:**
+- Create: `public/robots.txt`
+- Create: `public/og-default.png` (gerar manualmente ou usar imagem genérica)
+- Modify: `astro.config.mjs` (sitemap config)
+- Move: assets antigos para `public/` se já não estiverem
+
+- [ ] **Step 1: Criar public/robots.txt**
 
 ```
 User-agent: *
@@ -1750,32 +1736,35 @@ Allow: /
 Sitemap: https://marciioluucas.github.io/sitemap-index.xml
 ```
 
-(Astro+@astrojs/sitemap gera `sitemap-index.xml` automaticamente.)
-
-- [ ] **Step 4: Apagar `sitemap.xml` antigo da raiz**
+- [ ] **Step 2: Mover ícones existentes para public/**
 
 ```bash
-git rm sitemap.xml
+git mv apple-touch-icon-*.png public/ 2>/dev/null || true
+git mv favicon*.* public/ 2>/dev/null || true
+git mv mstile-*.png public/ 2>/dev/null || true
+git mv ads.txt public/
+git mv sitemap.xml public/sitemap-old.xml
 ```
 
-- [ ] **Step 5: Validar build gera sitemap**
+- [ ] **Step 3: Adicionar og-default.png em public/**
+
+Usar imagem genérica 1200x630 com "Calculadora de Combustível" + cor primary. Pode ser gerada à mão (Canva/Figma) e salva como `public/og-default.png`. Se não houver tempo, usar `favicon-196x196.png` temporariamente.
+
+- [ ] **Step 4: Build verifica sitemap-index.xml**
+
+Run: `npm run build && cat dist/sitemap-index.xml | head -20`
+Expected: lista todas rotas com URLs canônicas
+
+- [ ] **Step 5: Commit**
 
 ```bash
-npm run build
-ls dist/sitemap-*
-```
-Expected: `dist/sitemap-index.xml` e `dist/sitemap-0.xml` existem.
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add src/pages/sobre.astro src/pages/404.astro public/robots.txt
-git commit -m "feat: about, 404, robots; remove legacy sitemap"
+git add public/ astro.config.mjs
+git commit -m "feat: robots, og default and asset migration"
 ```
 
 ---
 
-## Task 15: GitHub Action de deploy + Lighthouse
+## Task 13: GitHub Actions deploy
 
 **Files:**
 - Create: `.github/workflows/deploy.yml`
@@ -1784,222 +1773,169 @@ git commit -m "feat: about, 404, robots; remove legacy sitemap"
 
 ```yaml
 name: Deploy
+
 on:
-  push: { branches: [master] }
+  push:
+    branches: [master, main]
   workflow_dispatch:
+
 permissions:
   contents: read
   pages: write
   id-token: write
-concurrency: { group: "pages", cancel-in-progress: true }
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm }
+        with: { node-version: '20', cache: 'npm' }
       - run: npm ci
       - run: npm test
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
-        with: { path: dist }
+        with: { path: ./dist }
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    environment: { name: github-pages, url: "${{ steps.deployment.outputs.page_url }}" }
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
 ```
 
-- [ ] **Step 2: Habilitar GitHub Pages → Source = "GitHub Actions"**
+- [ ] **Step 2: Confirmar GitHub Pages aponta pra GitHub Actions**
 
-(Manual: Settings → Pages no GitHub.)
+Manualmente em: Settings → Pages → Source: GitHub Actions
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 3: Commit + push**
 
 ```bash
-git add .github/workflows/deploy.yml
-git commit -m "ci: github actions deploy to gh-pages"
+git add .github/
+git commit -m "ci: deploy via github actions to pages"
+git push
 ```
+
+- [ ] **Step 4: Verificar deploy verde no GitHub**
+
+Aguardar workflow concluir, abrir https://marciioluucas.github.io e validar.
 
 ---
 
-## Task 16: README com instruções operacionais
+## Task 14: QA mobile real e Lighthouse
 
-**Files:**
-- Create: `README.md`
+- [ ] **Step 1: Lighthouse mobile**
 
-- [ ] **Step 1: Criar README**
+Run no Chrome DevTools (modo incognito): https://marciioluucas.github.io
+Expected: Performance ≥ 95, Accessibility ≥ 95, Best Practices ≥ 95, SEO ≥ 95.
 
-```markdown
-# Calculadora de Combustível
+Se < 95 em qualquer categoria: corrigir e fazer commit.
 
-Site estático em Astro 5 + Tailwind 4 hospedado no GitHub Pages.
+- [ ] **Step 2: Validar JSON-LD**
 
-## Dev
+Abrir https://validator.schema.org/ → colar URL.
+Expected: WebApplication + FAQPage detectados na home; Vehicle detectado em /calculadora/civic-2018.
 
-```bash
-npm install
-npm run dev      # http://localhost:4321
-npm test         # vitest
-npm run build    # gera dist/
-```
+- [ ] **Step 3: Testar em iPhone real (Safari) e Android (Chrome)**
 
-## Adicionar um veículo
+Checklist:
+- Form preenche e calcula
+- Teclado decimal abre nos inputs numéricos
+- Botão Calcular alcançável com polegar
+- Resultado scrolla suave
+- Compartilhar abre share sheet nativo no mobile
+- Sem scroll horizontal em 375px width
+- Ad placeholder não quebra layout
 
-Editar `src/data/vehicles.json` e adicionar entrada com `slug`, `marca`, `modelo`, `ano`, `tanque` e `autonomia`. Build gera rota estática `/calculadora/<slug>` automaticamente.
+- [ ] **Step 4: Validar AdSense em produção**
 
-## AdSense — habilitar
+Aguardar 24-48h após deploy. Verificar console por erros do `adsbygoogle.js`. Confirmar slots renderizando (mesmo que placeholder Google) nas 3 posições.
 
-1. Acessar https://www.google.com/adsense/ → **Anúncios → Por unidade de anúncio**.
-2. Criar **Display responsivo** ou **In-article**, copiar `data-ad-slot`.
-3. Editar `src/lib/ads.ts` substituindo `0000000001` (`topo`) e `0000000002` (`inline`) pelos IDs reais.
-4. Em produção, ads aparecem 24-48h após detecção de tráfego.
-5. **Não usar Auto Ads** junto com slots manuais (canibaliza).
-6. Em dev (localhost) mostra placeholder cinza, não chama AdSense.
-
-## Configurar regra dos 70%
-
-Padrão 70%. Usuário ajusta em `/configuracoes` (slider 65-75%). Valor persiste em `localStorage`.
-
-## Estrutura
-
-- `src/lib/calc.ts` — funções puras testadas
-- `src/components/` — Astro components + ilhas React (`*.tsx`)
-- `src/data/vehicles.json` — fonte dos presets
-- `src/pages/calculadora/[slug].astro` — geração estática por veículo
-```
-
-- [ ] **Step 2: Commit**
-
-```bash
-git add README.md
-git commit -m "docs: README with dev/adsense/vehicles instructions"
-```
-
----
-
-## Task 17: QA mobile e Lighthouse final
-
-- [ ] **Step 1: Build de produção local e preview**
-
-```bash
-npm run build
-npm run preview
-```
-Abrir http://localhost:4321 no Chrome DevTools mobile (iPhone SE 375px).
-
-- [ ] **Step 2: Checklist manual**
-
-- [ ] Fluxo home: Calcular preenchido (Civic) → resultado correto, highlight 70% colorido
-- [ ] Trocar veículo no select → inputs atualizam
-- [ ] Cadastrar meu carro → persiste após reload
-- [ ] TripCalculator aparece após Calcular, atualiza ao mudar km
-- [ ] ShareButton: navigator.share no mobile, fallback clipboard no desktop
-- [ ] History grava últimos 5 cálculos
-- [ ] Configurações: slider muda valor; "Apagar tudo" limpa storage
-- [ ] /calculadora/civic-2018 funciona idêntico, com title/description próprios
-- [ ] 404 customizado em URL inexistente
-- [ ] AdSlot mostra placeholder em dev; em produção precisa testar pós-deploy
-
-- [ ] **Step 3: Lighthouse mobile (DevTools → Lighthouse → Mobile, Performance/SEO/Best/A11y)**
-
-Expected: ≥ 95 em todas. Se algo falhar:
-- Performance < 95 → conferir bundle (`npm run build` mostra tamanhos), reduzir ilhas, lazyload Chart.js (não está no escopo v2 mas pode estar incluído na Task 12 se tempo)
-- SEO < 100 → checar meta description única por página, h1, hreflang
-- A11y < 95 → labels, contraste, foco visível
-
-- [ ] **Step 4: Validar JSON-LD em https://validator.schema.org**
-
-Colar URL do preview ou copiar HTML gerado em `dist/index.html` e `dist/calculadora/civic-2018/index.html`.
-
-- [ ] **Step 5: Commit final (apenas se algo foi corrigido)**
+- [ ] **Step 5: Commit qualquer fix**
 
 ```bash
 git add -A
-git commit -m "chore: qa fixes from lighthouse and manual mobile testing"
-```
-
----
-
-## Task 18: Cutover — substituir site atual
-
-- [ ] **Step 1: Push para master**
-
-```bash
-git push origin master
-```
-
-- [ ] **Step 2: Acompanhar GitHub Action**
-
-```bash
-gh run watch
-```
-Expected: build + deploy verde.
-
-- [ ] **Step 3: Testar produção real**
-
-Abrir https://marciioluucas.github.io em iPhone real e Android real:
-- ads.txt acessível: https://marciioluucas.github.io/ads.txt
-- sitemap acessível: https://marciioluucas.github.io/sitemap-index.xml
-- robots: https://marciioluucas.github.io/robots.txt
-- Console sem erros do AdSense
-
-- [ ] **Step 4: Solicitar (re)indexação no Google Search Console**
-
-Manual: https://search.google.com/search-console → Inspeção de URL → "Solicitar indexação" para:
-- /
-- /calculadora/civic-2018
-- 2-3 outras rotas de modelos populares
-
-- [ ] **Step 5: Apagar `legacy/`**
-
-Após confirmar produção OK por 48h:
-```bash
-git rm -r legacy
-git commit -m "chore: remove legacy v1 files after cutover"
+git commit -m "fix: qa polish from real-device testing"
 git push
 ```
 
 ---
 
-## Self-Review
+## Task 15: Documentação README
 
-**Spec coverage:**
-- §2 Stack ✓ Task 1
-- §3 Mobile-first ✓ Tasks 5, 8, 17
-- §4 Paleta ✓ Task 1 (globals.css)
-- §5 Rotas ✓ Tasks 9, 10, 13, 14
-- §6 Estrutura ✓ Tasks 5-14
-- §7 Modelo de dados ✓ Tasks 3, 4, 11
-- §8 Lógica calc ✓ Task 2
-- §9 Features (a, c, e, f, h) ✓ Tasks 8 (f), 12 (a, c, e), 7+9+10 (h)
-- §10 SEO ✓ Tasks 6, 9, 10, 14
-- §11 AdSense ✓ Tasks 7, 16 (instruções)
-- §12 Acessibilidade ✓ Task 8 (aria-live, labels), Task 17 (Lighthouse a11y)
-- §13 Testes ✓ Tasks 2, 3, 17
-- §14 Migração ✓ Tasks 1-18
-- §15 Riscos: slot existente preservado ✓ (Task 7)
-- §16 DoD ✓ Task 17
+**Files:**
+- Modify: `README.md`
 
-**Tipos consistentes:**
-- `Vehicle` tipo único (Task 4), reusado nas 11, 12
-- `Combustivel` em calc.ts
-- Eventos: `fuelcalc:vehicle-selected`, `fuelcalc:calculated`, `fuelcalc:calculated-history` ✓ consistentes
-- `AD_SLOTS` chaves: `topo`, `inline`, `rodape` ✓ usadas em Tasks 9, 10
+- [ ] **Step 1: Atualizar README**
 
-**Gaps fechados:**
-- OG image dinâmica: spec §10.2 menciona, plano usa `og-default.png` estático em /public — se quiser geração dinâmica, criar Task 6.5 com `@vercel/og` ou Satori. Mantido fora do escopo v2 (estático já satisfaz Lighthouse SEO 100).
+```markdown
+# Calculadora de Combustível v2
+
+Calculadora estática mobile-first para comparar etanol vs gasolina. Astro + Tailwind, hospedada no GitHub Pages.
+
+## Dev
+
+```bash
+npm install
+npm run dev    # http://localhost:4321
+npm test       # vitest
+npm run build  # output em dist/
+```
+
+## Adicionar veículo
+
+Editar `src/data/vehicles.json`. Cada chave é o slug usado em `/calculadora/[slug]`.
+
+## AdSense
+
+Slots configurados em `src/lib/ads.ts`. Cliente: `ca-pub-4225671400356326`.
+- after-hero: `9152601323`
+- in-article: `1798901087`
+- footer: `2582311903`
+
+Para adicionar slots novos: criar unidade no painel AdSense, copiar `data-ad-slot`, adicionar em `AD_SLOTS`.
+
+## Deploy
+
+Push para `master` dispara GitHub Action que builda e publica em GitHub Pages.
+```
+
+- [ ] **Step 2: Commit final**
+
+```bash
+git add README.md
+git commit -m "docs: update readme for v2"
+git push
+```
 
 ---
 
-**Plan complete and saved to `docs/superpowers/plans/2026-05-09-fuel-calc-redesign.md`.**
+## Self-Review Notes
 
-Two execution options:
+- **Spec coverage:**
+  - Stack Astro+Tailwind+TS → Task 1, 2
+  - Mobile-first → Task 2 (tokens), 7 (form), 14 (QA)
+  - Multi-veículo + Civic preset → Task 5, 7, 8
+  - localStorage (meu carro / histórico / settings) → Task 4, 9, 10
+  - Cálculo de viagem (c) → Task 9
+  - Share (e) → Task 9
+  - Regra 70% destacada (f) → Task 7, 10
+  - Histórico (a) → Task 9
+  - 3 ad slots (h) → Task 4 (constants), 6 (component), 7 (home), 8 (per-vehicle)
+  - SEO completo → Task 6 (SEO component), 8 (Vehicle schema), 11 (FAQPage + WebApp), 12 (sitemap, robots, OG)
+  - Configurações editáveis → Task 10
+  - Lighthouse ≥ 95 + QA mobile real → Task 14
+  - GitHub Actions deploy → Task 13
 
-1. **Subagent-Driven (recommended)** — dispatch a fresh subagent per task, review between tasks, fast iteration.
-2. **Inline Execution** — execute tasks in this session using executing-plans, batch with checkpoints.
+- **Placeholder scan:** sem TBD/TODO. OG image custom é responsabilidade manual (sinalizado no Step 3 da Task 12).
 
-Which approach?
+- **Type consistency:** `Combustivel`, `EconomiaInput`, `EconomiaResult`, `StoredVehicle`, `Settings`, `CalcHistoryEntry` definidos uma vez (Task 3, 4) e reutilizados.
+
+- **Open question (não-bloqueante):** OG image dinâmica via Satori foi adiada — usando OG default na v2. Pode virar tarefa futura.
