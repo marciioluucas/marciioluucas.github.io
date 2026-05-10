@@ -4,6 +4,7 @@ import SEO from '../components/SEO.astro';
 import AdSlot from '../components/AdSlot.astro';
 import FuelCalculator from '../components/FuelCalculator.astro';
 import FAQ from '../components/FAQ.astro';
+import EducationalContent from '../components/EducationalContent.astro';
 import faq from '../data/faq.json';
 import { AD_SLOTS } from '../lib/ads';
 
@@ -42,6 +43,7 @@ const jsonLd = [
   <div class="container-app">
     <AdSlot slot={AD_SLOTS.inArticle} format="fluid" layout="in-article" />
   </div>
+  <EducationalContent />
   <FAQ />
   <div class="container-app">
     <AdSlot slot={AD_SLOTS.footer} />
