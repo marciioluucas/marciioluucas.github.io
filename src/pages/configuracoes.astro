@@ -1,0 +1,15 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SEO from '../components/SEO.astro';
+import SettingsPanel from '../components/SettingsPanel.tsx';
+---
+<Layout title="Configurações — Fuel Calc">
+  <SEO slot="head"
+    title="Configurações — Calculadora de Combustível"
+    description="Ajuste a regra dos 70%, gerencie histórico e dados salvos no navegador."
+  />
+  <section class="container-app pt-8">
+    <h1 class="text-3xl font-bold">Configurações</h1>
+  </section>
+  <SettingsPanel client:load />
+</Layout>
